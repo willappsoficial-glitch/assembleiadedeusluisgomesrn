@@ -316,3 +316,11 @@ html, body {
         box-sizing: border-box !important;
     }
 }
+
+/* --- REGRA DE OURO PARA ESCONDER --- */
+.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
