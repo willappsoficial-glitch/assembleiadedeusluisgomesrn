@@ -222,3 +222,55 @@ html, body {
         margin-top: 10px;
     }
 }
+
+/* --- BLINDAGEM CONTRA ROLAGEM LATERAL (Cole no final do style.css) --- */
+
+/* 1. Força bruta no corpo da página */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important; /* Corta o excesso impiedosamente */
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
+
+/* 2. Garante que padding não aumente a largura dos elementos */
+* {
+    box-sizing: border-box; 
+}
+
+/* 3. Ajusta os containers principais para respeitar a borda */
+.container, nav, footer, .hero, .login-card, .card {
+    width: 100%;
+    max-width: 100vw; /* Garante que não passe da janela de visualização */
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box; /* O padding fica DENTRO dos 100%, não fora */
+}
+
+/* 4. Correção Específica para Mobile */
+@media (max-width: 768px) {
+    
+    /* Garante que o Nav não empurre a tela */
+    nav {
+        padding: 15px 10px; /* Reduz padding lateral do menu */
+    }
+
+    .container {
+        padding: 10px; /* Reduz padding do conteúdo */
+        overflow: hidden; /* Se algo vazar dentro do container, corta */
+    }
+
+    /* Força inputs e botões a caberem */
+    input, select, textarea, button, .btn-primary, .btn-cta {
+        max-width: 100% !important;
+        width: 100%; 
+    }
+
+    /* Garante que a tabela/cards não vazem */
+    .escala-table, .escala-table tr, .escala-table td {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+}
