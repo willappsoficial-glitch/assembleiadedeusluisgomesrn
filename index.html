@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4b0082">
+    <meta name="theme-color" content="#4b0082">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AD Luís Gomes">
-<link rel="apple-touch-icon" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AD Luís Gomes">
+    <link rel="apple-touch-icon" href="logo.png">
 </head>
 <body>
 
@@ -31,11 +31,11 @@
         <div class="hero-content">
             <h1>Bem-vindo</h1>
             <p>Identifique-se para acessar as escalas e avisos da igreja.</p>
-            
+
             <div class="login-card">
                 <input type="text" id="inputNome" placeholder="Seu Nome Completo">
                 <input type="email" id="inputEmail" placeholder="Seu E-mail (para receber avisos)">
-                <button onclick="entrarMembro()" id="btnEntrar" class="btn-cta">Acessar Sistema</button>
+                <button type="button" onclick="entrarMembro()" id="btnEntrar" class="btn-cta">Acessar Sistema</button>
             </div>
             <p class="disclaimer">Seu e-mail será usado apenas para avisos da igreja.</p>
         </div>
@@ -43,7 +43,7 @@
 
     <main id="memberArea" class="hidden">
         <div class="container content-grid">
-            
+
             <div class="main-column">
                 <h2 class="section-title"><span class="material-icons">calendar_today</span> Escala da Semana</h2>
                 <div class="table-responsive">
@@ -78,7 +78,7 @@
             <h3>Acesso Pastoral</h3>
             <p>Área restrita à liderança.</p>
             <input type="password" id="adminPassword" placeholder="Senha Mestra">
-            <button onclick="validarAdmin()" class="btn-primary">Entrar no Painel</button>
+            <button type="button" onclick="validarAdmin()" class="btn-primary">Entrar no Painel</button>
         </div>
     </div>
 
@@ -88,50 +88,49 @@
             <button onclick="logoutAdmin()" class="btn-small">Sair do Admin</button>
         </div>
         <div class="admin-grid">
-    
+
             <div class="card">
                 <h3>Escala da Semana</h3>
                 <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">Adicione os dias um por um, depois clique em Publicar.</p>
-                
-                <div class="input-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
+
+                <div class="input-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <input type="date" id="dataEscala">
                     <input type="time" id="horaEscala">
                 </div>
+                
                 <input type="text" id="eventoEscala" placeholder="Evento (Ex: Culto de Doutrina)">
                 <input type="text" id="dirigentesEscala" placeholder="Dirigentes">
                 <input type="text" id="porteirosEscala" placeholder="Porteiros">
-                
+
                 <button onclick="adicionarItemEscala()" class="btn-secondary" style="margin-bottom:15px;">+ Adicionar à Lista</button>
-        
+
                 <div id="previewEscala" style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:15px; display:none;">
                     <h4 style="font-size:0.9rem; margin-bottom:5px;">Itens prontos para enviar:</h4>
                     <ul id="listaPreview" style="font-size:0.85rem; padding-left:20px; color:#333;"></ul>
                 </div>
-        
+
                 <button onclick="submitEscalaSemana()" class="btn-admin" id="btnPublicarTudo" disabled>Publicar Semana Inteira</button>
             </div>
-        
+
             <div class="card">
                 <h3>Novo Aviso</h3>
                 <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">Envia um e-mail imediato para todos.</p>
-                
+
                 <input type="text" id="tituloAviso" placeholder="Título do Aviso">
                 <textarea id="msgAviso" placeholder="Digite a mensagem do aviso..." rows="6"></textarea>
-                
+
                 <button onclick="submitAviso()" class="btn-admin" style="background-color: var(--accent); color: var(--primary-dark);">Enviar Aviso Agora</button>
             </div>
-        
+
         </div>
     </div>
 
     <footer>
         <p>&copy; 2025 Assembleia de Deus - Luís Gomes/RN</p>
-        <button onclick="toggleAdminLogin()" class="btn-footer-link">Área do Obreiro</button>
+        <button type="button" onclick="toggleAdminLogin()" class="btn-footer-link">Área do Obreiro</button>
     </footer>
 
     <div id="toast" class="toast hidden"></div>
     <script src="script.js"></script>
 </body>
 </html>
-
-
