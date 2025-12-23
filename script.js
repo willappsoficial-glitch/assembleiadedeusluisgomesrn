@@ -3,11 +3,18 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbyg4gz8cGyrRpDEG989Kgw1
 
 // --- INICIALIZAÇÃO ---
 window.onload = function() {
-    verificarAcessoMembro();
-    verificarSessaoAdmin();
+    if (localStorage.getItem('churchAdminPass')) {
+        verificarSessaoAdmin();
+    } else {
+        verificarAcessoMembro();
+    }
+    carregarDados();
 };
 
-// --- LÓGICA DE LOGIN (MEMBRO) ---
+// ======================================================
+// 1. LÓGICA DE LOGIN (MEMBRO)
+// ======================================================
+
 function verificarAcessoMembro() {
     const email = localStorage.getItem('ad_membro_email');
     if (email) {
@@ -32,7 +39,6 @@ async function entrarMembro() {
     btn.innerText = "Registrando...";
     btn.disabled = true;
 
-    // Envia sem esperar resposta para ser rápido
     fetchData('cadastrarMembro', { nome: nome, email: email });
 
     localStorage.setItem('ad_membro_nome', nome);
@@ -47,19 +53,22 @@ function mostrarAreaMembro(nome) {
 
     document.getElementById('userInfo').classList.remove('hidden');
     document.getElementById('userNameDisplay').innerText = "Paz, " + nome.split(' ')[0]; 
-
+    
     carregarDados();
 }
 
 function sairMembro() {
-    if(confirm("Deseja sair? Você terá que digitar seus dados novamente.")) {
+    if(confirm("Deseja sair?")) {
         localStorage.removeItem('ad_membro_nome');
         localStorage.removeItem('ad_membro_email');
         location.reload();
     }
 }
 
-// --- FUNÇÕES DE DADOS (API) ---
+// ======================================================
+// 2. LÓGICA DE DADOS (ESCALAS E AVISOS)
+// ======================================================
+
 async function fetchData(action, params = {}) {
     if (['getEscalas', 'getAvisos'].includes(action)) {
         try {
@@ -79,47 +88,139 @@ async function fetchData(action, params = {}) {
 }
 
 async function carregarDados() {
+    // A. AVISOS
+    const avisos = await fetchData('getAvisos');
+    renderizarAvisos('avisosContainer', avisos);      
+    renderizarAvisos('avisosContainerAdmin', avisos); 
+
+    // B. ESCALAS
     const escalas = await fetchData('getEscalas');
-    const tbody = document.getElementById('tabelaEscalasBody');
+    let escalasSemana = filtrarSemanaAtual(escalas);
+
+    // --- NOVA LÓGICA DE ORDENAÇÃO (O SEGREDO ESTÁ AQUI) ---
+    // Organiza do dia mais antigo para o mais novo
+    escalasSemana.sort((a, b) => {
+        const dataA = parseDataSegura(a.data);
+        const dataB = parseDataSegura(b.data);
+        
+        // Se as datas forem diferentes, ordena pela data
+        if (dataA.getTime() !== dataB.getTime()) {
+            return dataA - dataB;
+        }
+        
+        // Se for o mesmo dia (ex: dois cultos no domingo), ordena pela hora
+        // Convertendo para texto simples para comparar (08:00 vem antes de 19:00)
+        let horaA = formatarHoraGoogle(a.hora);
+        let horaB = formatarHoraGoogle(b.hora);
+        return horaA.localeCompare(horaB);
+    });
+    // ------------------------------------------------------
+
+    renderizarEscala('tabelaEscalasBody', escalasSemana);      
+    renderizarEscala('tabelaEscalasAdminBody', escalasSemana); 
+}
+
+// --- FUNÇÃO PARA LIMPAR DATA (Ignora Fuso) ---
+function parseDataSegura(dataString) {
+    if (!dataString) return null;
+    let dataObj = new Date(dataString);
+    if (isNaN(dataObj.getTime()) || dataString.length === 10) {
+        const partes = dataString.split('-'); 
+        dataObj = new Date(partes[0], partes[1] - 1, partes[2]);
+    }
+    return dataObj;
+}
+
+// --- A VACINA DO GOOGLE SHEETS (Correção Matemática) ---
+function formatarHoraGoogle(horaISO) {
+    if (!horaISO) return "";
+    if (!horaISO.includes('T')) return horaISO.substring(0, 5);
+
+    try {
+        const parteTempo = horaISO.split('T')[1]; 
+        let [horas, minutos] = parteTempo.split(':').map(Number);
+        let totalMinutos = (horas * 60) + minutos;
+
+        // SUBTRAI O ERRO HISTÓRICO (3h06m)
+        totalMinutos = totalMinutos - 186;
+
+        if (totalMinutos < 0) totalMinutos += 1440; 
+
+        let horasReais = Math.floor(totalMinutos / 60);
+        let minutosReais = totalMinutos % 60;
+
+        return `${horasReais.toString().padStart(2, '0')}:${minutosReais.toString().padStart(2, '0')}`;
+
+    } catch (e) {
+        console.error("Erro ao converter hora:", e);
+        return horaISO.split('T')[1].substring(0, 5);
+    }
+}
+
+function renderizarEscala(elementId, dados) {
+    const tbody = document.getElementById(elementId);
+    if (!tbody) return; 
+
     tbody.innerHTML = "";
 
-    if (escalas.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center'>Nenhuma escala publicada.</td></tr>";
-    } else {
-        escalas.forEach(e => {
-            let dataF = e.data;
-            try { dataF = new Date(e.data).toLocaleDateString('pt-BR'); } catch(x){}
-
-            let horaF = e.hora;
-            if (e.hora && e.hora.toString().includes('T')) {
-                horaF = new Date(e.hora).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            }
-
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${dataF}</strong><br><span style="color:#666">${horaF}</span></td>
-                    <td><strong style="color:var(--primary)">${e.evento}</strong></td>
-                    <td>
-                        <div><small>Dirigente:</small> ${e.dirigentes}</div>
-                        <div style="margin-top:5px"><small>Porteiro:</small> ${e.porteiros}</div>
-                    </td>
-                </tr>`;
-        });
+    if (!dados || dados.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:#666'>Nenhuma escala para esta semana.</td></tr>";
+        return;
     }
 
-    const avisos = await fetchData('getAvisos');
-    const divAvisos = document.getElementById('avisosContainer');
-    divAvisos.innerHTML = "";
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0); 
 
-    if (avisos.length === 0) divAvisos.innerHTML = "<p>Sem avisos no momento.</p>";
+    const nomesDias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+
+    dados.forEach(e => {
+        const dataEvento = parseDataSegura(e.data);
+        if (!dataEvento) return;
+
+        const isHoje = dataEvento.getDate() === hoje.getDate() && 
+                       dataEvento.getMonth() === hoje.getMonth() && 
+                       dataEvento.getFullYear() === hoje.getFullYear();
+
+        const classeDestaque = isHoje ? "destaque-hoje" : "";
+        const textoDia = nomesDias[dataEvento.getDay()];
+        const dataFormatada = dataEvento.toLocaleDateString('pt-BR');
+
+        let horaFormatada = formatarHoraGoogle(e.hora);
+
+        tbody.innerHTML += `
+            <tr class="${classeDestaque}">
+                <td style="min-width: 90px;">
+                    <div style="font-size:0.7rem; color:#888; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">${textoDia}</div>
+                    <div style="font-size:1.1rem; font-weight:bold; line-height:1.2;">${dataFormatada}</div>
+                    <div style="color:var(--primary); font-weight:500; font-size:0.9rem;">${horaFormatada}</div>
+                </td>
+                <td style="vertical-align:middle;">
+                    <strong style="font-size:1.1rem; color:var(--text);">${e.evento}</strong>
+                </td>
+                <td>
+                    <div style="margin-bottom:6px;"><small style="color:#666; font-size:0.8rem;">Dirigente:</small><br><b style="font-size:0.95rem;">${e.dirigentes}</b></div>
+                    <div><small style="color:#666; font-size:0.8rem;">Porteiro:</small><br><span style="font-size:0.95rem;">${e.porteiros}</span></div>
+                </td>
+            </tr>`;
+    });
+}
+
+function renderizarAvisos(elementId, dados) {
+    const container = document.getElementById(elementId);
+    if (!container) return;
+
+    container.innerHTML = "";
+    if (!dados || dados.length === 0) container.innerHTML = "<p style='color:#999; text-align:center'>Sem avisos no momento.</p>";
     else {
-        avisos.forEach(a => {
-            const dataPost = new Date(a.dataPostagem).toLocaleDateString('pt-BR');
-            divAvisos.innerHTML += `
+        dados.forEach(a => {
+            let dataPost = parseDataSegura(a.dataPostagem);
+            let dataString = dataPost ? dataPost.toLocaleDateString('pt-BR') : "";
+
+            container.innerHTML += `
                 <div class="aviso-item">
                     <div class="aviso-header">
                         <span class="aviso-title">${a.titulo}</span>
-                        <span class="aviso-date">${dataPost}</span>
+                        <span class="aviso-date">${dataString}</span>
                     </div>
                     <p>${a.mensagem}</p>
                 </div>`;
@@ -127,11 +228,33 @@ async function carregarDados() {
     }
 }
 
-// --- LÓGICA DE ADMIN (OBREIRO) ---
-// CORRIGIDO: Removi a chave extra e limpei a lógica
+function filtrarSemanaAtual(lista) {
+    if(!lista) return [];
+
+    const hoje = new Date();
+    const diaSemana = hoje.getDay(); 
+
+    const domingo = new Date(hoje);
+    domingo.setDate(hoje.getDate() - diaSemana);
+    domingo.setHours(0,0,0,0);
+
+    const sabado = new Date(domingo);
+    sabado.setDate(domingo.getDate() + 6);
+    sabado.setHours(23,59,59,999);
+
+    return lista.filter(item => {
+        const dataItem = parseDataSegura(item.data);
+        if(!dataItem) return false;
+        return dataItem >= domingo && dataItem <= sabado;
+    });
+}
+
+// ======================================================
+// 3. LÓGICA DE ADMIN (OBREIRO)
+// ======================================================
+
 function toggleAdminLogin() {
     const modal = document.getElementById('loginModal');
-
     if (modal.classList.contains('hidden') || modal.style.display === 'none') {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
@@ -156,20 +279,13 @@ async function validarAdmin() {
 
     if (res.success) {
         localStorage.setItem('churchAdminPass', pass);
-
-        // 1. Fecha a janelinha de senha
+        
         modal.classList.add('hidden');
         modal.style.display = 'none';
 
-        // 2. ESCONDE a tela de login do membro (O Pulo do Gato)
-        document.getElementById('loginSection').classList.add('hidden');
-        
-        // 3. Garante que a área de membro também suma (caso estivesse aberta)
-        document.getElementById('memberArea').classList.add('hidden');
-
-        // 4. Abre o painel do obreiro
         verificarSessaoAdmin();
         showToast("Bem-vindo, Obreiro!");
+        carregarDados();
 
     } else {
         alert("Senha incorreta.");
@@ -180,69 +296,20 @@ async function validarAdmin() {
 function verificarSessaoAdmin() {
     const pass = localStorage.getItem('churchAdminPass');
     if (pass) {
-        // Mostra o Painel Admin
         document.getElementById('adminPanel').classList.remove('hidden');
-        
-        // Esconde todo o resto para não poluir a tela
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('memberArea').classList.add('hidden');
-        document.getElementById('userInfo').classList.add('hidden'); // Opcional: esconde nome do membro no topo
+        document.getElementById('userInfo').classList.add('hidden');
     }
 }
 
 function logoutAdmin() {
     localStorage.removeItem('churchAdminPass');
-    location.reload();
+    location.reload(); 
 }
 
-async function submitEscala() {
-    const senha = localStorage.getItem('churchAdminPass');
-    const dados = {
-        senha: senha,
-        data: document.getElementById('dataEscala').value,
-        hora: document.getElementById('horaEscala').value,
-        evento: document.getElementById('eventoEscala').value,
-        dirigentes: document.getElementById('dirigentesEscala').value,
-        porteiros: document.getElementById('porteirosEscala').value
-    };
-    if(!dados.data) return showToast("Preencha a data.");
+// --- FUNÇÕES DE ENVIO (ADMIN) ---
 
-    showToast("Publicando...");
-    const res = await fetchData('salvarEscala', dados);
-    showToast(res.msg);
-    if(res.success) { 
-        document.getElementById('eventoEscala').value = ''; 
-        carregarDados();
-    }
-}
-
-async function submitAviso() {
-    const senha = localStorage.getItem('churchAdminPass');
-    const dados = {
-        senha: senha,
-        titulo: document.getElementById('tituloAviso').value,
-        mensagem: document.getElementById('msgAviso').value
-    };
-    if(!dados.titulo) return showToast("Preencha o título.");
-
-    showToast("Enviando...");
-    const res = await fetchData('salvarAviso', dados);
-    showToast(res.msg);
-    if(res.success) {
-        document.getElementById('tituloAviso').value = '';
-        document.getElementById('msgAviso').value = '';
-        carregarDados();
-    }
-}
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.remove('hidden');
-    setTimeout(() => { t.classList.add('hidden'); }, 3000);
-}
-
-// Variável global para armazenar a lista temporária
 let itensEscalaTemp = [];
 
 function adicionarItemEscala() {
@@ -253,7 +320,7 @@ function adicionarItemEscala() {
     const porteiros = document.getElementById('porteirosEscala').value;
 
     if (!data || !evento) {
-        showToast("Preencha pelo menos Data e Evento.");
+        showToast("Preencha Data e Evento.");
         return;
     }
 
@@ -283,11 +350,11 @@ function atualizarPreview() {
         div.style.display = 'block';
         btn.disabled = false;
         btn.style.opacity = "1";
-        btn.innerText = `Publicar Semana Inteira (${itensEscalaTemp.length} itens)`;
+        btn.innerText = `Publicar (${itensEscalaTemp.length} itens)`;
 
         itensEscalaTemp.forEach((item, index) => {
             let dataPt = item.data.split('-').reverse().join('/');
-            ul.innerHTML += `<li>${dataPt} - ${item.evento} <span style="color:red; cursor:pointer; font-weight:bold;" onclick="removerItem(${index})">X</span></li>`;
+            ul.innerHTML += `<li>${dataPt} - ${item.evento} <span style="color:red; cursor:pointer; font-weight:bold; margin-left:10px;" onclick="removerItem(${index})">X</span></li>`;
         });
     } else {
         div.style.display = 'none';
@@ -306,7 +373,7 @@ async function submitEscalaSemana() {
     const senha = localStorage.getItem('churchAdminPass');
 
     if (itensEscalaTemp.length === 0) return;
-    if (!confirm(`Confirma a publicação de ${itensEscalaTemp.length} escalas? Isso enviará 1 e-mail para todos.`)) return;
+    if (!confirm(`Confirma a publicação de ${itensEscalaTemp.length} escalas?`)) return;
 
     const btn = document.getElementById('btnPublicarTudo');
     btn.innerText = "Enviando...";
@@ -317,15 +384,41 @@ async function submitEscalaSemana() {
         itens: itensEscalaTemp
     };
 
-    showToast("Processando lote...");
+    showToast("Salvando...");
     const res = await fetchData('salvarEscalaLote', dados);
     showToast(res.msg);
 
     if (res.success) {
         itensEscalaTemp = [];
         atualizarPreview();
-        carregarDados();
+        carregarDados(); 
     }
 
     btn.innerText = "Publicar Semana Inteira";
+}
+
+async function submitAviso() {
+    const senha = localStorage.getItem('churchAdminPass');
+    const dados = {
+        senha: senha,
+        titulo: document.getElementById('tituloAviso').value,
+        mensagem: document.getElementById('msgAviso').value
+    };
+    if(!dados.titulo) return showToast("Preencha o título.");
+
+    showToast("Enviando...");
+    const res = await fetchData('salvarAviso', dados);
+    showToast(res.msg);
+    if(res.success) {
+        document.getElementById('tituloAviso').value = '';
+        document.getElementById('msgAviso').value = '';
+        carregarDados();
+    }
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => { t.classList.add('hidden'); }, 3000);
 }
