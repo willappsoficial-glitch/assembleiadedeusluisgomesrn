@@ -324,3 +324,10 @@ html, body {
     opacity: 0 !important;
     pointer-events: none !important;
 }
+
+#tela-login-obreiro {
+    width: 100%; /* Garante que ocupe a tela */
+    min-height: 100vh; /* Garante altura mínima */
+    background-color: #f0f0f0; /* Coloque uma cor de fundo provisória para ver se a div aparece */
+    color: black; /* Force a cor do texto para preto */
+}
