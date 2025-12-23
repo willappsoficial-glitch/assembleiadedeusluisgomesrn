@@ -349,24 +349,3 @@ async function submitEscalaSemana() {
     btn.innerText = "Publicar Semana Inteira";
 
 }
-
-//teste de correção área de login do obreiro
-
-function abrirAreaObreiro() {
-    alert("Passo 1: Função chamada"); // Se isso não aparecer, o botão não está clicando.
-    
-    var home = document.getElementById("tela-inicial");
-    var login = document.getElementById("tela-login-obreiro");
-    
-    if (!login) {
-        alert("Erro: Não achei a div do login!");
-        return;
-    }
-
-    home.style.display = "none";
-    alert("Passo 2: Home ocultada"); 
-    
-    login.style.display = "block";
-    alert("Passo 3: Login deve estar visível agora");
-}
-
