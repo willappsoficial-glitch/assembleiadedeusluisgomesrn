@@ -157,11 +157,17 @@ async function validarAdmin() {
     if (res.success) {
         localStorage.setItem('churchAdminPass', pass);
 
+        // 1. Fecha a janelinha de senha
         modal.classList.add('hidden');
         modal.style.display = 'none';
 
-        document.getElementById('loginSection').classList.remove('hidden');
+        // 2. ESCONDE a tela de login do membro (O Pulo do Gato)
+        document.getElementById('loginSection').classList.add('hidden');
+        
+        // 3. Garante que a área de membro também suma (caso estivesse aberta)
+        document.getElementById('memberArea').classList.add('hidden');
 
+        // 4. Abre o painel do obreiro
         verificarSessaoAdmin();
         showToast("Bem-vindo, Obreiro!");
 
@@ -169,6 +175,7 @@ async function validarAdmin() {
         alert("Senha incorreta.");
         document.getElementById('adminPassword').value = '';
     }
+}
 }
 
 function verificarSessaoAdmin() {
