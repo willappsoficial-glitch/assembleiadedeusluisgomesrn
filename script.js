@@ -176,12 +176,17 @@ async function validarAdmin() {
         document.getElementById('adminPassword').value = '';
     }
 }
-}
 
 function verificarSessaoAdmin() {
     const pass = localStorage.getItem('churchAdminPass');
     if (pass) {
+        // Mostra o Painel Admin
         document.getElementById('adminPanel').classList.remove('hidden');
+        
+        // Esconde todo o resto para não poluir a tela
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('memberArea').classList.add('hidden');
+        document.getElementById('userInfo').classList.add('hidden'); // Opcional: esconde nome do membro no topo
     }
 }
 
