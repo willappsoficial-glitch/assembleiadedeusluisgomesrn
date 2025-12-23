@@ -125,10 +125,68 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
 @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* Mobile Responsive */
+/* --- RESPONSIVIDADE (MOBILE) --- */
 @media (max-width: 768px) {
-    .content-grid { grid-template-columns: 1fr; }
+    
+    /* Ajustes Gerais de Layout */
+    .container { padding: 10px; width: 100%; }
+    .content-grid { grid-template-columns: 1fr; gap: 15px; }
     .admin-grid { grid-template-columns: 1fr; }
+    
+    /* Ajuste do Título Hero */
+    .hero { padding: 3rem 1rem; }
     .hero h1 { font-size: 1.8rem; }
+    
+    /* --- MÁGICA DA TABELA VIRANDO CARD --- */
+    .escala-table, .escala-table tbody, .escala-table tr, .escala-table td {
+        display: block;
+        width: 100%;
+    }
+
+    /* Esconde o cabeçalho da tabela (Data, Evento, Resp) no celular */
+    .escala-table thead { display: none; }
+
+    /* Estilo do "Card" (cada linha da tabela vira um bloco) */
+    .escala-table tr {
+        margin-bottom: 15px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        padding: 10px;
+    }
+
+    /* Estilo das células dentro do card */
+    .escala-table td {
+        text-align: left;
+        padding: 8px 5px;
+        border-bottom: 1px solid #eee;
+        position: relative;
+    }
+
+    /* Remove a borda do último item para ficar limpo */
+    .escala-table td:last-child { border-bottom: none; }
+
+    /* Força a coluna "Evento" a ficar maior e mais destacada */
+    .escala-table td:nth-child(2) {
+        font-size: 1.1rem;
+        background-color: #f9f4ff; /* Fundo roxo bem clarinho para destacar o evento */
+        border-radius: 4px;
+        margin: 5px 0;
+        padding-left: 10px;
+    }
+
+    /* Ajuste dos inputs do Admin para não ficarem espremidos */
+    input[type="date"], input[type="time"] {
+        width: 100%;
+        margin-bottom: 10px; /* Garante espaço entre data e hora */
+    }
+    
+    /* Corrige aquela div que tem style="display:grid" no HTML do admin */
+    .card > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important; /* Força ficar um embaixo do outro */
+        gap: 0 !important;
+    }
 }
 
 /* OBRIGATÓRIO: Força ocultar elementos */
