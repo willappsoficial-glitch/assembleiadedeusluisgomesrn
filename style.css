@@ -150,6 +150,7 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
     opacity: 0 !important;
 }
 
+
 /* --- MOBILE RESPONSIVE --- */
 @media (max-width: 768px) {
     html { font-size: 14px; } 
@@ -184,4 +185,13 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
 
     /* Ajuste de inputs no mobile */
     .input-row { grid-template-columns: 1fr !important; }
+}
+
+/* --- DESTAQUE DO DIA ATUAL --- */
+.destaque-hoje {
+    background-color: #fff9c4 !important; /* Amarelo clarinho */
+    border-left: 5px solid var(--accent) !important;
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
