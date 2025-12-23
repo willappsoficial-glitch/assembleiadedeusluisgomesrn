@@ -141,18 +141,18 @@ async function carregarDados() {
 // --- LÓGICA DE ADMIN (OBREIRO) ---
 function toggleAdminLogin() {
     const modal = document.getElementById('loginModal');
-    const loginSection = document.getElementById('loginSection');
-    const memberArea = document.getElementById('memberArea');
-
-    // Alterna o Modal (Abre/Fecha)
-    modal.classList.toggle('hidden');
-
-    // TRUQUE VISUAL:
-    // Se a área de membros NÃO está visível (ou seja, estou na tela de login "Hero")
-    if (memberArea.classList.contains('hidden')) {
-        // Alterna a visibilidade do fundo também (para limpar a tela)
-        loginSection.classList.toggle('hidden');
+    
+    // Verifica se está visível ou não
+    if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
+        // ABRE
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    } else {
+        // FECHA
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
     }
+}
 }
 
 async function validarAdmin() {
@@ -349,3 +349,4 @@ async function submitEscalaSemana() {
     btn.innerText = "Publicar Semana Inteira";
 
 }
+
