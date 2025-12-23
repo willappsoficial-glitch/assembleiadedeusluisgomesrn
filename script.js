@@ -11,11 +11,9 @@ window.onload = function() {
 function verificarAcessoMembro() {
     const email = localStorage.getItem('ad_membro_email');
     if (email) {
-        // Se já tem email salvo, libera o acesso
         const nome = localStorage.getItem('ad_membro_nome');
         mostrarAreaMembro(nome);
     } else {
-        // Se não, mostra a tela de login
         document.getElementById('loginSection').classList.remove('hidden');
         document.getElementById('memberArea').classList.add('hidden');
     }
@@ -34,27 +32,22 @@ async function entrarMembro() {
     btn.innerText = "Registrando...";
     btn.disabled = true;
 
-    // 1. Envia para o Google Sheets (para salvar na lista de avisos)
-    // Não esperamos a resposta para não travar o usuário, enviamos em "background"
+    // Envia sem esperar resposta para ser rápido
     fetchData('cadastrarMembro', { nome: nome, email: email });
 
-    // 2. Salva no navegador do usuário
     localStorage.setItem('ad_membro_nome', nome);
     localStorage.setItem('ad_membro_email', email);
 
-    // 3. Libera o acesso
     mostrarAreaMembro(nome);
 }
 
 function mostrarAreaMembro(nome) {
     document.getElementById('loginSection').classList.add('hidden');
     document.getElementById('memberArea').classList.remove('hidden');
-    
-    // Atualiza o menu superior
-    document.getElementById('userInfo').classList.remove('hidden');
-    document.getElementById('userNameDisplay').innerText = "Paz, " + nome.split(' ')[0]; // Só o primeiro nome
 
-    // Carrega os dados da igreja
+    document.getElementById('userInfo').classList.remove('hidden');
+    document.getElementById('userNameDisplay').innerText = "Paz, " + nome.split(' ')[0]; 
+
     carregarDados();
 }
 
@@ -86,20 +79,17 @@ async function fetchData(action, params = {}) {
 }
 
 async function carregarDados() {
-    // Carregar Escalas
     const escalas = await fetchData('getEscalas');
     const tbody = document.getElementById('tabelaEscalasBody');
     tbody.innerHTML = "";
-    
+
     if (escalas.length === 0) {
         tbody.innerHTML = "<tr><td colspan='3' style='text-align:center'>Nenhuma escala publicada.</td></tr>";
     } else {
         escalas.forEach(e => {
-            // Formatação segura da data
             let dataF = e.data;
             try { dataF = new Date(e.data).toLocaleDateString('pt-BR'); } catch(x){}
-            
-            // Formatação da hora
+
             let horaF = e.hora;
             if (e.hora && e.hora.toString().includes('T')) {
                 horaF = new Date(e.hora).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
@@ -117,11 +107,10 @@ async function carregarDados() {
         });
     }
 
-    // Carregar Avisos
     const avisos = await fetchData('getAvisos');
     const divAvisos = document.getElementById('avisosContainer');
     divAvisos.innerHTML = "";
-    
+
     if (avisos.length === 0) divAvisos.innerHTML = "<p>Sem avisos no momento.</p>";
     else {
         avisos.forEach(a => {
@@ -139,55 +128,43 @@ async function carregarDados() {
 }
 
 // --- LÓGICA DE ADMIN (OBREIRO) ---
+// CORRIGIDO: Removi a chave extra e limpei a lógica
 function toggleAdminLogin() {
     const modal = document.getElementById('loginModal');
-    
-    // Verifica se está visível ou não
-    if (modal.style.display === 'none' || modal.classList.contains('hidden')) {
-        // ABRE
+
+    if (modal.classList.contains('hidden') || modal.style.display === 'none') {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
     } else {
-        // FECHA
         modal.classList.add('hidden');
         modal.style.display = 'none';
     }
-}
 }
 
 async function validarAdmin() {
     const pass = document.getElementById('adminPassword').value;
     const btn = document.querySelector('#loginModal .btn-primary');
     const modal = document.getElementById('loginModal');
-    
-    // Feedback visual
+
     btn.innerText = "Verificando...";
     btn.disabled = true;
-    
-    // Verifica senha no servidor
+
     const res = await fetchData('login', { senha: pass });
-    
+
     btn.disabled = false;
     btn.innerText = "Entrar no Painel";
 
     if (res.success) {
-        // Salva a senha
         localStorage.setItem('churchAdminPass', pass);
-        
-        // --- O SEGREDO ESTÁ AQUI ---
-        // Força o fechamento do modal adicionando a classe hidden
-        if (!modal.classList.contains('hidden')) {
-            modal.classList.add('hidden');
-        }
-        // ---------------------------
 
-        // Volta a mostrar a tela de login do membro (o fundo) se necessário
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+
         document.getElementById('loginSection').classList.remove('hidden');
 
-        // Abre o painel
         verificarSessaoAdmin();
         showToast("Bem-vindo, Obreiro!");
-        
+
     } else {
         alert("Senha incorreta.");
         document.getElementById('adminPassword').value = '';
@@ -217,7 +194,7 @@ async function submitEscala() {
         porteiros: document.getElementById('porteirosEscala').value
     };
     if(!dados.data) return showToast("Preencha a data.");
-    
+
     showToast("Publicando...");
     const res = await fetchData('salvarEscala', dados);
     showToast(res.msg);
@@ -235,7 +212,7 @@ async function submitAviso() {
         mensagem: document.getElementById('msgAviso').value
     };
     if(!dados.titulo) return showToast("Preencha o título.");
-    
+
     showToast("Enviando...");
     const res = await fetchData('salvarAviso', dados);
     showToast(res.msg);
@@ -257,7 +234,6 @@ function showToast(msg) {
 let itensEscalaTemp = [];
 
 function adicionarItemEscala() {
-    // Pega os valores
     const data = document.getElementById('dataEscala').value;
     const hora = document.getElementById('horaEscala').value;
     const evento = document.getElementById('eventoEscala').value;
@@ -269,7 +245,6 @@ function adicionarItemEscala() {
         return;
     }
 
-    // Adiciona ao array
     itensEscalaTemp.push({
         data: data,
         hora: hora,
@@ -278,14 +253,11 @@ function adicionarItemEscala() {
         porteiros: porteiros
     });
 
-    // Atualiza visualmente
     atualizarPreview();
-    
-    // Limpa os campos para o próximo
+
     document.getElementById('eventoEscala').value = '';
     document.getElementById('dirigentesEscala').value = '';
     document.getElementById('porteirosEscala').value = '';
-    // (Opcional: manter a data ou limpar, depende da preferência. Vou manter a data pra facilitar lançar vários cultos no mesmo dia se tiver)
 }
 
 function atualizarPreview() {
@@ -294,7 +266,7 @@ function atualizarPreview() {
     const btn = document.getElementById('btnPublicarTudo');
 
     ul.innerHTML = "";
-    
+
     if (itensEscalaTemp.length > 0) {
         div.style.display = 'block';
         btn.disabled = false;
@@ -302,7 +274,6 @@ function atualizarPreview() {
         btn.innerText = `Publicar Semana Inteira (${itensEscalaTemp.length} itens)`;
 
         itensEscalaTemp.forEach((item, index) => {
-            // Formata data rapidinho pra visualização
             let dataPt = item.data.split('-').reverse().join('/');
             ul.innerHTML += `<li>${dataPt} - ${item.evento} <span style="color:red; cursor:pointer; font-weight:bold;" onclick="removerItem(${index})">X</span></li>`;
         });
@@ -321,7 +292,7 @@ function removerItem(index) {
 
 async function submitEscalaSemana() {
     const senha = localStorage.getItem('churchAdminPass');
-    
+
     if (itensEscalaTemp.length === 0) return;
     if (!confirm(`Confirma a publicação de ${itensEscalaTemp.length} escalas? Isso enviará 1 e-mail para todos.`)) return;
 
@@ -331,21 +302,18 @@ async function submitEscalaSemana() {
 
     const dados = {
         senha: senha,
-        itens: itensEscalaTemp // Envia o array todo
+        itens: itensEscalaTemp
     };
 
     showToast("Processando lote...");
-    
-    const res = await fetchData('salvarEscalaLote', dados); // Nova ação no Apps Script
-    
+    const res = await fetchData('salvarEscalaLote', dados);
     showToast(res.msg);
-    
-    if (res.success) {
-        itensEscalaTemp = []; // Zera a lista
-        atualizarPreview();
-        carregarDados(); // Recarrega a tabela do site
-    }
-    
-    btn.innerText = "Publicar Semana Inteira";
 
+    if (res.success) {
+        itensEscalaTemp = [];
+        atualizarPreview();
+        carregarDados();
+    }
+
+    btn.innerText = "Publicar Semana Inteira";
 }
