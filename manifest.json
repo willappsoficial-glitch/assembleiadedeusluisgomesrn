@@ -1,0 +1,21 @@
+{
+    "name": "AD Luís Gomes",
+    "short_name": "AD LG",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#4b0082",
+    "theme_color": "#4b0082",
+    "orientation": "portrait",
+    "icons": [
+      {
+        "src": "logo.jpg",
+        "sizes": "192x192",
+        "type": "image/jpeg"
+      },
+      {
+        "src": "logo.jpg",
+        "sizes": "512x512",
+        "type": "image/jpeg"
+      }
+    ]
+  }
