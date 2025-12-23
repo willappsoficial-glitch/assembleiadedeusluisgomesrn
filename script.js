@@ -160,26 +160,38 @@ async function validarAdmin() {
     const btn = document.querySelector('#loginModal .btn-primary');
     const modal = document.getElementById('loginModal');
     
+    // Feedback visual
     btn.innerText = "Verificando...";
+    btn.disabled = true;
     
+    // Verifica senha no servidor
     const res = await fetchData('login', { senha: pass });
     
+    btn.disabled = false;
+    btn.innerText = "Entrar no Painel";
+
     if (res.success) {
+        // Salva a senha
         localStorage.setItem('churchAdminPass', pass);
         
-        // Sucesso: Esconde o modal de senha
-        modal.classList.add('hidden'); 
-        
-        // Mostra o painel do obreiro
+        // --- O SEGREDO ESTÁ AQUI ---
+        // Força o fechamento do modal adicionando a classe hidden
+        if (!modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
+        }
+        // ---------------------------
+
+        // Volta a mostrar a tela de login do membro (o fundo) se necessário
+        document.getElementById('loginSection').classList.remove('hidden');
+
+        // Abre o painel
         verificarSessaoAdmin();
         showToast("Bem-vindo, Obreiro!");
         
-        // Nota: Não reexibimos o 'loginSection' aqui para manter o foco no Painel Admin
     } else {
         alert("Senha incorreta.");
         document.getElementById('adminPassword').value = '';
     }
-    btn.innerText = "Entrar no Painel";
 }
 
 function verificarSessaoAdmin() {
@@ -335,4 +347,5 @@ async function submitEscalaSemana() {
     }
     
     btn.innerText = "Publicar Semana Inteira";
+
 }
