@@ -295,3 +295,83 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
         overflow-x: hidden !important;
     }
 }
+
+/* ================================================= */
+/* CORREÇÃO FINAL: ESCALA DA SEMANA (MOBILE PATCH)   */
+/* ================================================= */
+/* ======================================================== */
+/* MOBILE RESPONSIVO - CORREÇÃO DEFINITIVA DE LARGURA      */
+/* ======================================================== */
+@media (max-width: 768px) {
+
+    /* 1. ZERAR A LARGURA MÍNIMA (O Grande Vilão) */
+    .table-responsive, 
+    .escala-table {
+        min-width: 0 !important; /* Mata o limite de 600px */
+        width: 100% !important;
+        display: block !important; /* Deixa de ser tabela, vira bloco */
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    /* 2. Transformar as linhas (TR) em Cartões */
+    .escala-table tr {
+        display: flex !important;     /* Flexbox vertical */
+        flex-direction: column !important;
+        width: 100% !important;
+        min-width: 0 !important;      /* Permite encolher */
+        background: #fff;
+        margin-bottom: 15px;
+        padding: 15px !important;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-sizing: border-box !important; /* Padding não estoura largura */
+    }
+
+    /* 3. Ajuste das Células (TD) para quebrar texto */
+    .escala-table td {
+        display: block !important;
+        width: 100% !important;
+        padding: 5px 0 !important;
+        border: none !important;
+        
+        /* OBRIGA o texto a quebrar */
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important; /* Quebra links e datas longas */
+    }
+
+    /* 4. Layout Específico: Data e Hora no Topo */
+    .escala-table td:nth-child(1) {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-bottom: 1px solid #eee !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* 5. Ajuste dos Avisos (Mural) */
+    .aviso-item {
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        word-break: break-word !important;
+    }
+
+    /* 6. Inputs e Botões não podem passar de 100% */
+    input, select, textarea, .input-row {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* 7. Destaque Amarelo no Mobile */
+    .escala-table tr.destaque-hoje {
+        background-color: #fff9c4 !important;
+        border: 2px solid var(--accent) !important;
+        transform: none !important;
+    }
+}
