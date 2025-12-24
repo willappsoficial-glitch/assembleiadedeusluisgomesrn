@@ -375,3 +375,65 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
         transform: none !important;
     }
 }
+
+/* --- CRÉDITOS DO RODAPÉ (WhatsApp) --- */
+.dev-credits {
+    margin-top: 15px;
+    font-size: 0.8rem;
+    color: #888;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.dev-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: 0.2s;
+}
+.dev-link:hover { color: var(--accent); }
+
+/* --- BOTÃO FLUTUANTE DE DOAÇÃO --- */
+.btn-donate-float {
+    position: fixed;
+    bottom: 20px;
+    left: 20px; /* Fica na esquerda para não brigar com o Toast na direita */
+    background-color: #25d366; /* Verde esperança/WhatsApp ou use var(--accent) */
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s;
+    border: none;
+}
+
+.btn-donate-float:hover {
+    transform: scale(1.1);
+}
+
+.btn-donate-float .material-icons { font-size: 24px; }
+
+/* Ajuste do Modal de Pix */
+.pix-key-box {
+    background: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 1.1rem;
+    margin: 15px 0;
+    word-break: break-all;
+    border: 1px dashed #999;
+}
