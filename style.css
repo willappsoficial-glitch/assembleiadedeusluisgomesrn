@@ -437,3 +437,62 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
     word-break: break-all;
     border: 1px dashed #999;
 }
+
+/* ========================================================== */
+/* CORREÇÃO FINAL: RODAPÉ E BOTÃO DE DOAÇÃO (MOBILE PATCH 2) */
+/* ========================================================== */
+@media (max-width: 768px) {
+
+    /* 1. O BOTÃO FLUTUANTE (Balãozinho) */
+    .btn-donate-float {
+        /* Aumenta o tamanho para facilitar o toque */
+        width: 60px !important;
+        height: 60px !important;
+        
+        /* Ajusta a posição para não ficar escondido na curva da tela */
+        bottom: 25px !important;
+        left: 20px !important;
+        
+        /* O IMPORTANTE: Garante que fique SOBRE qualquer outra coisa */
+        z-index: 999999 !important; 
+        
+        /* Sombra mais forte para destacar */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+    }
+    
+    .btn-donate-float .material-icons {
+        font-size: 30px !important; /* Ícone maior */
+    }
+
+    /* 2. O RODAPÉ (Visual e Clique) */
+    footer {
+        padding-bottom: 90px !important; /* Dá espaço extra pro botão não cobrir o texto */
+        position: relative !important;
+        z-index: 10 !important; /* Garante que o rodapé não fique "soterrado" */
+    }
+
+    /* 3. CRÉDITOS DO DESENVOLVEDOR */
+    .dev-credits {
+        display: flex !important;
+        flex-direction: column !important; /* Empilha: Texto em cima, Link embaixo */
+        align-items: center !important;
+        gap: 10px !important;
+        margin-top: 20px !important;
+        padding-top: 15px !important;
+        border-top: 1px solid #ccc !important;
+        width: 100% !important;
+    }
+
+    /* 4. LINK DO WHATSAPP (Ajuste de toque) */
+    .dev-link {
+        font-size: 1rem !important; /* Letra maior */
+        padding: 12px 20px !important; /* Cria uma área "clicável" grande */
+        background-color: rgba(0,0,0,0.05); /* Fundo cinza claro para parecer botão */
+        border-radius: 50px; /* Borda redonda */
+        width: 100% !important; /* Ocupa a largura toda pra ser fácil de clicar */
+        text-align: center;
+        justify-content: center;
+        color: var(--primary) !important;
+        text-decoration: none !important;
+    }
+}
