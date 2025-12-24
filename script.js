@@ -239,7 +239,6 @@ function renderizarAvisos(elementId, dados) {
                 </div>`;
         });
     }
-}
 
 function filtrarSemanaAtual(lista) {
     if(!lista) return [];
