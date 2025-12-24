@@ -496,3 +496,11 @@ footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; ma
         text-decoration: none !important;
     }
 }
+
+/* --- ITEM DE DIA PASSADO (APAGADO) --- */
+.item-passado {
+    opacity: 0.5 !important; /* Fica 50% transparente */
+    filter: grayscale(100%) !important; /* Remove cores (fica cinza) */
+    background-color: #f4f4f4 !important; /* Fundo cinza claro */
+    border-color: #e0e0e0 !important;
+}
