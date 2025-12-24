@@ -150,10 +150,39 @@
         </div>
         </div> <footer>
         <p>&copy; 2025 Assembleia de Deus - Luís Gomes/RN</p>
+        
         <button type="button" onclick="toggleAdminLogin()" class="btn-footer-link">Área do Obreiro</button>
+
+        <div class="dev-credits">
+            <span>Desenvolvido por:</span>
+            <a href="https://wa.me/5584996106961?text=Ol%C3%A1%20Williano,%20vi%20o%20sistema%20da%20AD%20Lu%C3%ADs%20Gomes%20e%20gostaria%20de%20saber%20mais." target="_blank" class="dev-link">
+                <span class="material-icons" style="font-size:16px;">code</span> Williano Costa | WillWeb
+            </a>
+        </div>
     </footer>
 
     <div id="toast" class="toast hidden"></div>
     <script src="script.js"></script>
+    <button class="btn-donate-float" onclick="abrirModalPix()" title="Abençoe o Desenvolvedor">
+        <span class="material-icons">card_giftcard</span>
+    </button>
+
+    <div id="modalPix" class="modal hidden" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalPix()">&times;</span>
+            <h3 style="color:var(--primary)">Abençoe este Projeto</h3>
+            <p style="margin-top:10px; font-size:0.95rem;">O desenvolvimento deste sistema foi uma oferta voluntária. Se você sentir de abençoar o desenvolvedor com qualquer valor, use a chave abaixo:</p>
+            
+            <div class="pix-key-box" id="chavePixTexto">
+                3fe7ebb6-a140-4459-9800-0f7ed58da665
+            </div>
+
+            <button onclick="copiarPix()" class="btn-cta" style="font-size:1rem; padding: 10px;">
+                <span class="material-icons" style="vertical-align:middle; font-size:18px;">content_copy</span> Copiar Chave Pix
+            </button>
+            
+            <p style="font-size:0.8rem; color:#888; margin-top:15px;">Deus abençoe sua vida!</p>
+        </div>
+    </div>
 </body>
 </html>
