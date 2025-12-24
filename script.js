@@ -169,7 +169,7 @@ function renderizarEscala(elementId, dados) {
     }
 
     const hoje = new Date();
-    hoje.setHours(0,0,0,0); 
+    hoje.setHours(0,0,0,0); // Zera hora para comparar apenas o dia
 
     const nomesDias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
 
@@ -177,18 +177,31 @@ function renderizarEscala(elementId, dados) {
         const dataEvento = parseDataSegura(e.data);
         if (!dataEvento) return;
 
+        // 1. Verifica se é HOJE
         const isHoje = dataEvento.getDate() === hoje.getDate() && 
                        dataEvento.getMonth() === hoje.getMonth() && 
                        dataEvento.getFullYear() === hoje.getFullYear();
 
-        const classeDestaque = isHoje ? "destaque-hoje" : "";
+        // 2. Verifica se é PASSADO (Menor que hoje)
+        // Como 'hoje' está com horas zeradas (00:00), qualquer dia anterior será menor.
+        const isPassado = dataEvento < hoje;
+
+        // 3. Define a classe CSS
+        let classeRow = "";
+        if (isHoje) {
+            classeRow = "destaque-hoje";
+        } else if (isPassado) {
+            classeRow = "item-passado";
+        }
+
         const textoDia = nomesDias[dataEvento.getDay()];
         const dataFormatada = dataEvento.toLocaleDateString('pt-BR');
 
+        // Formata hora com correção do Google
         let horaFormatada = formatarHoraGoogle(e.hora);
 
         tbody.innerHTML += `
-            <tr class="${classeDestaque}">
+            <tr class="${classeRow}">
                 <td style="min-width: 90px;">
                     <div style="font-size:0.7rem; color:#888; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">${textoDia}</div>
                     <div style="font-size:1.1rem; font-weight:bold; line-height:1.2;">${dataFormatada}</div>
