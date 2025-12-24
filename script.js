@@ -422,3 +422,34 @@ function showToast(msg) {
     t.classList.remove('hidden');
     setTimeout(() => { t.classList.add('hidden'); }, 3000);
 }
+
+// ======================================================
+// 4. FUNÇÕES DE DOAÇÃO (PIX)
+// ======================================================
+
+function abrirModalPix() {
+    const modal = document.getElementById('modalPix');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function fecharModalPix() {
+    const modal = document.getElementById('modalPix');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+}
+
+function copiarPix() {
+    // Pega o texto da div
+    const textoPix = document.getElementById('chavePixTexto').innerText.trim();
+    
+    // Tenta copiar para a área de transferência
+    navigator.clipboard.writeText(textoPix).then(() => {
+        showToast("Chave Pix copiada!");
+        // Opcional: fecha o modal depois de copiar
+        setTimeout(fecharModalPix, 2000);
+    }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+        alert("Não foi possível copiar automaticamente. Selecione a chave e copie manualmente.");
+    });
+}
