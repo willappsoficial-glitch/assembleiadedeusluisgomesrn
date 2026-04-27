@@ -180,3 +180,35 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
     font-size: 0.95rem; font-weight: 700; color: var(--accent);
     position: relative; z-index: 2;
 }
+
+
+/* ======================================================== */
+/* DEPARTAMENTOS (GRUPOS)                                   */
+/* ======================================================== */
+.dept-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+}
+.dept-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.dept-icon .material-icons-round {
+    font-size: 30px;
+}
+.dept-info h3 {
+    font-size: 1.15rem;
+    color: var(--text-main);
+    margin-bottom: 2px;
+}
+.dept-info p {
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
