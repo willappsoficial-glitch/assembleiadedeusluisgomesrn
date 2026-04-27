@@ -1,7 +1,5 @@
-// --- CONFIGURAÇÃO ---
 const API_URL = 'https://script.google.com/macros/s/AKfycbyg4gz8cGyrRpDEG989Kgw1fAnrjzzz7jYAyqbuLTXig2iO396iTMYJiukmkoei5GU8/exec'; 
 
-// --- INICIALIZAÇÃO ---
 window.onload = function() {
     if (localStorage.getItem('churchAdminPass')) {
         verificarSessaoAdmin();
@@ -11,70 +9,53 @@ window.onload = function() {
     carregarDados();
 };
 
-// ======================================================
-// 1. LÓGICA DE LOGIN (MEMBRO)
-// ======================================================
-
-function verificarAcessoMembro() {
-    const email = localStorage.getItem('ad_membro_email');
-    if (email) {
-        const nome = localStorage.getItem('ad_membro_nome');
-        mostrarAreaMembro(nome);
-    } else {
-        document.getElementById('loginSection').classList.remove('hidden');
-        document.getElementById('memberArea').classList.add('hidden');
-    }
-}
-
-async function entrarMembro() {
-    const nome = document.getElementById('inputNome').value;
-    const email = document.getElementById('inputEmail').value;
-    const btn = document.getElementById('btnEntrar');
-
-    if (!nome || !email) {
-        alert("Por favor, preencha nome e e-mail.");
+// --- DIGITAÇÃO E PROCESSAMENTO COM IA ---
+function iniciarDitadoIA() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Navegador não suporta voz.");
         return;
     }
 
-    btn.innerText = "Registrando...";
-    btn.disabled = true;
-
-    fetchData('cadastrarMembro', { nome: nome, email: email });
-
-    localStorage.setItem('ad_membro_nome', nome);
-    localStorage.setItem('ad_membro_email', email);
-
-    mostrarAreaMembro(nome);
-}
-
-function mostrarAreaMembro(nome) {
-    document.getElementById('loginSection').classList.add('hidden');
-    document.getElementById('memberArea').classList.remove('hidden');
-
-    document.getElementById('userInfo').classList.remove('hidden');
-    document.getElementById('userNameDisplay').innerText = "Paz, " + nome.split(' ')[0]; 
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
     
-    carregarDados();
+    const statusText = document.getElementById('statusIA');
+    statusText.style.display = 'block';
+    statusText.innerText = "Escutando... Pode falar a escala completa.";
+    statusText.style.color = "#ffab40";
+
+    recognition.start();
+
+    recognition.onresult = async function(event) {
+        const textoFalado = event.results[0][0].transcript;
+        statusText.innerText = "Processando com IA...";
+        statusText.style.color = "#25d366";
+
+        const res = await fetchData('processarTextoGemini', { texto: textoFalado });
+        
+        if(res && res.success) {
+            document.getElementById('dataEscala').value = res.dados.data || '';
+            document.getElementById('horaEscala').value = res.dados.hora || '';
+            document.getElementById('eventoEscala').value = res.dados.evento || '';
+            document.getElementById('dirigentesEscala').value = res.dados.dirigentes || '';
+            document.getElementById('porteirosEscala').value = res.dados.porteiros || '';
+            statusText.innerText = "Campos preenchidos!";
+        } else {
+            statusText.innerText = "IA falhou. Tente novamente.";
+            statusText.style.color = "red";
+        }
+        setTimeout(() => { statusText.style.display = 'none'; }, 4000);
+    };
 }
 
-function sairMembro() {
-    if(confirm("Deseja sair?")) {
-        localStorage.removeItem('ad_membro_nome');
-        localStorage.removeItem('ad_membro_email');
-        location.reload();
-    }
-}
-
-// ======================================================
-// 2. LÓGICA DE DADOS (ESCALAS E AVISOS)
-// ======================================================
-
+// --- LÓGICA DE DADOS ---
 async function fetchData(action, params = {}) {
     if (['getEscalas', 'getAvisos'].includes(action)) {
         try {
             const response = await fetch(`${API_URL}?action=${action}`);
             return await response.json();
-        } catch (e) { console.error(e); return []; }
+        } catch (e) { return []; }
     } else {
         const payload = { action: action, ...params };
         try {
@@ -83,386 +64,246 @@ async function fetchData(action, params = {}) {
                 body: JSON.stringify(payload)
             });
             return await response.json();
-        } catch (e) { return { erro: true, msg: "Erro de conexão." }; }
+        } catch (e) { return { erro: true }; }
     }
 }
 
 async function carregarDados() {
-    // A. AVISOS
     const avisos = await fetchData('getAvisos');
     renderizarAvisos('avisosContainer', avisos);      
     renderizarAvisos('avisosContainerAdmin', avisos); 
 
-    // B. ESCALAS
     const escalas = await fetchData('getEscalas');
     let escalasSemana = filtrarSemanaAtual(escalas);
 
-    // --- NOVA LÓGICA DE ORDENAÇÃO (O SEGREDO ESTÁ AQUI) ---
-    // Organiza do dia mais antigo para o mais novo
     escalasSemana.sort((a, b) => {
         const dataA = parseDataSegura(a.data);
         const dataB = parseDataSegura(b.data);
-        
-        // Se as datas forem diferentes, ordena pela data
-        if (dataA.getTime() !== dataB.getTime()) {
-            return dataA - dataB;
-        }
-        
-        // Se for o mesmo dia (ex: dois cultos no domingo), ordena pela hora
-        // Convertendo para texto simples para comparar (08:00 vem antes de 19:00)
-        let horaA = formatarHoraGoogle(a.hora);
-        let horaB = formatarHoraGoogle(b.hora);
-        return horaA.localeCompare(horaB);
+        if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
+        return formatarHoraGoogle(a.hora).localeCompare(formatarHoraGoogle(b.hora));
     });
-    // ------------------------------------------------------
 
-    renderizarEscala('tabelaEscalasBody', escalasSemana);      
-    renderizarEscala('tabelaEscalasAdminBody', escalasSemana); 
+    renderizarEscala('tabelaEscalasBody', escalasSemana, false);      
+    renderizarEscala('tabelaEscalasAdminBody', escalasSemana, true); 
 }
 
-// --- FUNÇÃO PARA LIMPAR DATA (Ignora Fuso) ---
-function parseDataSegura(dataString) {
-    if (!dataString) return null;
-    let dataObj = new Date(dataString);
-    if (isNaN(dataObj.getTime()) || dataString.length === 10) {
-        const partes = dataString.split('-'); 
-        dataObj = new Date(partes[0], partes[1] - 1, partes[2]);
-    }
-    return dataObj;
-}
-
-// --- A VACINA DO GOOGLE SHEETS (Correção Matemática) ---
-function formatarHoraGoogle(horaISO) {
-    if (!horaISO) return "";
-    if (!horaISO.includes('T')) return horaISO.substring(0, 5);
-
-    try {
-        const parteTempo = horaISO.split('T')[1]; 
-        let [horas, minutos] = parteTempo.split(':').map(Number);
-        let totalMinutos = (horas * 60) + minutos;
-
-        // SUBTRAI O ERRO HISTÓRICO (3h06m)
-        totalMinutos = totalMinutos - 186;
-
-        if (totalMinutos < 0) totalMinutos += 1440; 
-
-        let horasReais = Math.floor(totalMinutos / 60);
-        let minutosReais = totalMinutos % 60;
-
-        return `${horasReais.toString().padStart(2, '0')}:${minutosReais.toString().padStart(2, '0')}`;
-
-    } catch (e) {
-        console.error("Erro ao converter hora:", e);
-        return horaISO.split('T')[1].substring(0, 5);
-    }
-}
-
-function renderizarEscala(elementId, dados) {
+function renderizarEscala(elementId, dados, isAdmin = false) {
     const tbody = document.getElementById(elementId);
     if (!tbody) return; 
-
     tbody.innerHTML = "";
 
-    if (!dados || dados.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:#666'>Nenhuma escala para esta semana.</td></tr>";
-        return;
-    }
-
     const hoje = new Date();
-    hoje.setHours(0,0,0,0); // Zera hora para comparar apenas o dia
-
+    hoje.setHours(0,0,0,0);
     const nomesDias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
 
     dados.forEach(e => {
         const dataEvento = parseDataSegura(e.data);
-        if (!dataEvento) return;
+        const isHoje = dataEvento && dataEvento.toDateString() === hoje.toDateString();
+        const isPassado = dataEvento && dataEvento < hoje;
 
-        // 1. Verifica se é HOJE
-        const isHoje = dataEvento.getDate() === hoje.getDate() && 
-                       dataEvento.getMonth() === hoje.getMonth() && 
-                       dataEvento.getFullYear() === hoje.getFullYear();
-
-        // 2. Verifica se é PASSADO (Menor que hoje)
-        // Como 'hoje' está com horas zeradas (00:00), qualquer dia anterior será menor.
-        const isPassado = dataEvento < hoje;
-
-        // 3. Define a classe CSS
-        let classeRow = "";
-        if (isHoje) {
-            classeRow = "destaque-hoje";
-        } else if (isPassado) {
-            classeRow = "item-passado";
-        }
-
-        const textoDia = nomesDias[dataEvento.getDay()];
-        const dataFormatada = dataEvento.toLocaleDateString('pt-BR');
-
-        // Formata hora com correção do Google
+        let classeRow = isHoje ? "destaque-hoje" : (isPassado ? "item-passado" : "");
         let horaFormatada = formatarHoraGoogle(e.hora);
+        
+        let acoesAdmin = isAdmin ? `
+            <div style="margin-top:10px; border-top:1px dashed #ccc; padding-top:5px; text-align:center;">
+                <button onclick="abrirModalEdit('${e.linha}', '${e.data}', '${horaFormatada}', '${e.evento}', '${e.dirigentes}', '${e.porteiros}')" class="btn-tiny" style="background:var(--primary); color:white;">
+                   <span class="material-icons" style="font-size:12px">edit</span> Editar
+                </button>
+            </div>` : "";
 
         tbody.innerHTML += `
             <tr class="${classeRow}">
-                <td style="min-width: 90px;">
-                    <div style="font-size:0.7rem; color:#888; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">${textoDia}</div>
-                    <div style="font-size:1.1rem; font-weight:bold; line-height:1.2;">${dataFormatada}</div>
-                    <div style="color:var(--primary); font-weight:500; font-size:0.9rem;">${horaFormatada}</div>
-                </td>
-                <td style="vertical-align:middle;">
-                    <strong style="font-size:1.1rem; color:var(--text);">${e.evento}</strong>
-                </td>
                 <td>
-                    <div style="margin-bottom:6px;"><small style="color:#666; font-size:0.8rem;">Dirigente:</small><br><b style="font-size:0.95rem;">${e.dirigentes}</b></div>
-                    <div><small style="color:#666; font-size:0.8rem;">Porteiro:</small><br><span style="font-size:0.95rem;">${e.porteiros}</span></div>
+                    <small>${nomesDias[dataEvento.getDay()]}</small><br>
+                    <b>${dataEvento.toLocaleDateString('pt-BR')}</b><br>
+                    <span style="color:var(--primary)">${horaFormatada}</span>
+                </td>
+                <td><strong>${e.evento}</strong></td>
+                <td>
+                    <small>Dir:</small> <b>${e.dirigentes}</b><br>
+                    <small>Port:</small> ${e.porteiros}
+                    ${acoesAdmin}
                 </td>
             </tr>`;
     });
 }
 
-function renderizarAvisos(elementId, dados) {
-    const container = document.getElementById(elementId);
-    if (!container) return;
-
-    container.innerHTML = "";
-    if (!dados || dados.length === 0) container.innerHTML = "<p style='color:#999; text-align:center'>Sem avisos no momento.</p>";
-    else {
-        dados.forEach(a => {
-            let dataPost = parseDataSegura(a.dataPostagem);
-            let dataString = dataPost ? dataPost.toLocaleDateString('pt-BR') : "";
-
-            container.innerHTML += `
-                <div class="aviso-item">
-                    <div class="aviso-header">
-                        <span class="aviso-title">${a.titulo}</span>
-                        <span class="aviso-date">${dataString}</span>
-                    </div>
-                    <p>${a.mensagem}</p>
-                </div>`;
-        });
-    }
-}
-
-function filtrarSemanaAtual(lista) {
-    if(!lista) return [];
-
-    const hoje = new Date();
-    const diaSemana = hoje.getDay(); 
-
-    const domingo = new Date(hoje);
-    domingo.setDate(hoje.getDate() - diaSemana);
-    domingo.setHours(0,0,0,0);
-
-    const sabado = new Date(domingo);
-    sabado.setDate(domingo.getDate() + 6);
-    sabado.setHours(23,59,59,999);
-
-    return lista.filter(item => {
-        const dataItem = parseDataSegura(item.data);
-        if(!dataItem) return false;
-        return dataItem >= domingo && dataItem <= sabado;
-    });
-}
-
-// ======================================================
-// 3. LÓGICA DE ADMIN (OBREIRO)
-// ======================================================
-
-function toggleAdminLogin() {
-    const modal = document.getElementById('loginModal');
-    if (modal.classList.contains('hidden') || modal.style.display === 'none') {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
+// --- FUNÇÕES DE EDIÇÃO ---
+function abrirModalEdit(id, data, hora, evento, dirigentes, porteiros) {
+    document.getElementById('edit-id').value = id;
+    if(data.includes('/')) {
+        const p = data.split('/');
+        document.getElementById('edit-data').value = `${p[2]}-${p[1]}-${p[0]}`;
     } else {
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
+        document.getElementById('edit-data').value = data.substring(0,10);
     }
+    document.getElementById('edit-hora').value = hora;
+    document.getElementById('edit-evento').value = evento;
+    document.getElementById('edit-dirigentes').value = dirigentes;
+    document.getElementById('edit-porteiros').value = porteiros;
+    document.getElementById('modalEditEscala').style.display = 'flex';
 }
+
+function fecharModalEdit() { document.getElementById('modalEditEscala').style.display = 'none'; }
+
+async function salvarEdicaoEscala(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btn-salvar-edicao');
+    btn.innerText = "Salvando...";
+    
+    const res = await fetchData('editarEscala', {
+        senha: localStorage.getItem('churchAdminPass'),
+        linha: document.getElementById('edit-id').value,
+        data: document.getElementById('edit-data').value,
+        hora: document.getElementById('edit-hora').value,
+        evento: document.getElementById('edit-evento').value,
+        dirigentes: document.getElementById('edit-dirigentes').value,
+        porteiros: document.getElementById('edit-porteiros').value
+    });
+
+    if(res.success) {
+        fecharModalEdit();
+        showToast("Atualizado!");
+        carregarDados();
+    }
+    btn.innerText = "Salvar Alterações";
+}
+
+// --- RESTANTE DAS FUNÇÕES (LOGIN, PREVIEW, ETC) ---
+function entrarMembro() {
+    const n = document.getElementById('inputNome').value;
+    const e = document.getElementById('inputEmail').value;
+    if(!n || !e) return alert("Preencha tudo.");
+    localStorage.setItem('ad_membro_nome', n);
+    localStorage.setItem('ad_membro_email', e);
+    mostrarAreaMembro(n);
+}
+
+function mostrarAreaMembro(n) {
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('memberArea').classList.remove('hidden');
+    document.getElementById('userNameDisplay').innerText = "Paz, " + n.split(' ')[0];
+    document.getElementById('userInfo').classList.remove('hidden');
+}
+
+function sairMembro() { localStorage.clear(); location.reload(); }
 
 async function validarAdmin() {
-    const pass = document.getElementById('adminPassword').value;
-    const btn = document.querySelector('#loginModal .btn-primary');
-    const modal = document.getElementById('loginModal');
-
-    btn.innerText = "Verificando...";
-    btn.disabled = true;
-
-    const res = await fetchData('login', { senha: pass });
-
-    btn.disabled = false;
-    btn.innerText = "Entrar no Painel";
-
-    if (res.success) {
-        localStorage.setItem('churchAdminPass', pass);
-        
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-
-        verificarSessaoAdmin();
-        showToast("Bem-vindo, Obreiro!");
-        carregarDados();
-
-    } else {
-        alert("Senha incorreta.");
-        document.getElementById('adminPassword').value = '';
-    }
+    const p = document.getElementById('adminPassword').value;
+    const res = await fetchData('login', { senha: p });
+    if(res.success) {
+        localStorage.setItem('churchAdminPass', p);
+        location.reload();
+    } else alert("Senha incorreta");
 }
 
 function verificarSessaoAdmin() {
-    const pass = localStorage.getItem('churchAdminPass');
-    if (pass) {
+    if(localStorage.getItem('churchAdminPass')) {
         document.getElementById('adminPanel').classList.remove('hidden');
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('memberArea').classList.add('hidden');
-        document.getElementById('userInfo').classList.add('hidden');
     }
 }
 
-function logoutAdmin() {
-    localStorage.removeItem('churchAdminPass');
-    location.reload(); 
-}
-
-// --- FUNÇÕES DE ENVIO (ADMIN) ---
+function logoutAdmin() { localStorage.removeItem('churchAdminPass'); location.reload(); }
 
 let itensEscalaTemp = [];
-
 function adicionarItemEscala() {
-    const data = document.getElementById('dataEscala').value;
-    const hora = document.getElementById('horaEscala').value;
-    const evento = document.getElementById('eventoEscala').value;
-    const dirigentes = document.getElementById('dirigentesEscala').value;
-    const porteiros = document.getElementById('porteirosEscala').value;
-
-    if (!data || !evento) {
-        showToast("Preencha Data e Evento.");
-        return;
-    }
-
+    const d = document.getElementById('dataEscala').value;
+    const ev = document.getElementById('eventoEscala').value;
+    if(!d || !ev) return showToast("Falta data ou evento");
     itensEscalaTemp.push({
-        data: data,
-        hora: hora,
-        evento: evento,
-        dirigentes: dirigentes,
-        porteiros: porteiros
+        data: d, hora: document.getElementById('horaEscala').value,
+        evento: ev, dirigentes: document.getElementById('dirigentesEscala').value,
+        porteiros: document.getElementById('porteirosEscala').value
     });
-
     atualizarPreview();
-
     document.getElementById('eventoEscala').value = '';
-    document.getElementById('dirigentesEscala').value = '';
-    document.getElementById('porteirosEscala').value = '';
 }
 
 function atualizarPreview() {
-    const div = document.getElementById('previewEscala');
     const ul = document.getElementById('listaPreview');
     const btn = document.getElementById('btnPublicarTudo');
-
     ul.innerHTML = "";
-
-    if (itensEscalaTemp.length > 0) {
-        div.style.display = 'block';
+    if(itensEscalaTemp.length > 0) {
+        document.getElementById('previewEscala').style.display = 'block';
         btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.innerText = `Publicar (${itensEscalaTemp.length} itens)`;
-
-        itensEscalaTemp.forEach((item, index) => {
-            let dataPt = item.data.split('-').reverse().join('/');
-            ul.innerHTML += `<li>${dataPt} - ${item.evento} <span style="color:red; cursor:pointer; font-weight:bold; margin-left:10px;" onclick="removerItem(${index})">X</span></li>`;
+        itensEscalaTemp.forEach((it, i) => {
+            ul.innerHTML += `<li>${it.data} - ${it.evento} <b onclick="itensEscalaTemp.splice(${i},1);atualizarPreview()" style="color:red;cursor:pointer">X</b></li>`;
         });
     } else {
-        div.style.display = 'none';
+        document.getElementById('previewEscala').style.display = 'none';
         btn.disabled = true;
-        btn.style.opacity = "0.6";
-        btn.innerText = "Publicar Semana Inteira";
     }
-}
-
-function removerItem(index) {
-    itensEscalaTemp.splice(index, 1);
-    atualizarPreview();
 }
 
 async function submitEscalaSemana() {
-    const senha = localStorage.getItem('churchAdminPass');
-
-    if (itensEscalaTemp.length === 0) return;
-    if (!confirm(`Confirma a publicação de ${itensEscalaTemp.length} escalas?`)) return;
-
-    const btn = document.getElementById('btnPublicarTudo');
-    btn.innerText = "Enviando...";
-    btn.disabled = true;
-
-    const dados = {
-        senha: senha,
+    showToast("Publicando...");
+    const res = await fetchData('salvarEscalaLote', {
+        senha: localStorage.getItem('churchAdminPass'),
         itens: itensEscalaTemp
-    };
-
-    showToast("Salvando...");
-    const res = await fetchData('salvarEscalaLote', dados);
+    });
+    if(res.success) { itensEscalaTemp = []; atualizarPreview(); carregarDados(); }
     showToast(res.msg);
-
-    if (res.success) {
-        itensEscalaTemp = [];
-        atualizarPreview();
-        carregarDados(); 
-    }
-
-    btn.innerText = "Publicar Semana Inteira";
 }
 
 async function submitAviso() {
-    const senha = localStorage.getItem('churchAdminPass');
-    const dados = {
-        senha: senha,
+    const res = await fetchData('salvarAviso', {
+        senha: localStorage.getItem('churchAdminPass'),
         titulo: document.getElementById('tituloAviso').value,
         mensagem: document.getElementById('msgAviso').value
-    };
-    if(!dados.titulo) return showToast("Preencha o título.");
-
-    showToast("Enviando...");
-    const res = await fetchData('salvarAviso', dados);
-    showToast(res.msg);
-    if(res.success) {
-        document.getElementById('tituloAviso').value = '';
-        document.getElementById('msgAviso').value = '';
-        carregarDados();
-    }
-}
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.remove('hidden');
-    setTimeout(() => { t.classList.add('hidden'); }, 3000);
-}
-
-// ======================================================
-// 4. FUNÇÕES DE DOAÇÃO (PIX)
-// ======================================================
-
-function abrirModalPix() {
-    const modal = document.getElementById('modalPix');
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-}
-
-function fecharModalPix() {
-    const modal = document.getElementById('modalPix');
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
-}
-
-function copiarPix() {
-    // Pega o texto da div
-    const textoPix = document.getElementById('chavePixTexto').innerText.trim();
-    
-    // Tenta copiar para a área de transferência
-    navigator.clipboard.writeText(textoPix).then(() => {
-        showToast("Chave Pix copiada!");
-        // Opcional: fecha o modal depois de copiar
-        setTimeout(fecharModalPix, 2000);
-    }).catch(err => {
-        console.error('Erro ao copiar: ', err);
-        alert("Não foi possível copiar automaticamente. Selecione a chave e copie manualmente.");
     });
+    if(res.success) { document.getElementById('tituloAviso').value=''; document.getElementById('msgAviso').value=''; carregarDados(); }
+    showToast(res.msg);
+}
+
+function parseDataSegura(s) {
+    if(!s) return null;
+    let d = new Date(s);
+    if(isNaN(d.getTime())) {
+        const p = s.split('-');
+        d = new Date(p[0], p[1]-1, p[2]);
+    }
+    return d;
+}
+
+function formatarHoraGoogle(h) {
+    if(!h || !h.includes('T')) return h || "";
+    const t = h.split('T')[1];
+    let [hrs, min] = t.split(':').map(Number);
+    let tot = (hrs * 60) + min - 186;
+    if(tot < 0) tot += 1440;
+    return `${Math.floor(tot/60).toString().padStart(2,'0')}:${(tot%60).toString().padStart(2,'0')}`;
+}
+
+function filtrarSemanaAtual(l) {
+    const h = new Date(); h.setHours(0,0,0,0);
+    const dom = new Date(h); dom.setDate(h.getDate() - h.getDay());
+    const sab = new Date(dom); sab.setDate(dom.getDate() + 6); sab.setHours(23,59,59);
+    return l.filter(i => {
+        const di = parseDataSegura(i.data);
+        return di >= dom && di <= sab;
+    });
+}
+
+function renderizarAvisos(id, d) {
+    const c = document.getElementById(id);
+    if(!c) return;
+    c.innerHTML = d.length ? "" : "<p>Sem avisos.</p>";
+    d.forEach(a => {
+        c.innerHTML += `<div class="aviso-item"><b>${a.titulo}</b><p>${a.mensagem}</p></div>`;
+    });
+}
+
+function showToast(m) {
+    const t = document.getElementById('toast');
+    t.innerText = m; t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+}
+
+function abrirModalPix() { document.getElementById('modalPix').style.display='flex'; }
+function fecharModalPix() { document.getElementById('modalPix').style.display='none'; }
+function copiarPix() {
+    navigator.clipboard.writeText(document.getElementById('chavePixTexto').innerText);
+    showToast("Pix Copiado!");
 }
