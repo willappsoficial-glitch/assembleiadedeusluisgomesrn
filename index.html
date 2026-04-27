@@ -70,6 +70,13 @@
 
         <section id="tabMural" class="tab-content">
             <div class="container">
+                <div id="boxAniversariantes" style="margin-bottom: 25px; display: none;">
+                    <div class="section-header" style="border-bottom:none; margin-bottom: 10px;">
+                        <h2 style="color: #db2777; font-size: 1.15rem;"><span class="material-icons-round">cake</span> Aniversariantes do Dia</h2>
+                    </div>
+                    <div id="listaAniversariantes" class="cards-list"></div>
+                </div>
+
                 <div class="section-header">
                     <h2><span class="material-icons-round text-accent">campaign</span> Mural de Avisos</h2>
                 </div>
@@ -79,52 +86,52 @@
             </div>
         </section>
 
-        <section id="tabDepartamentos" class="tab-content">
+        <section id="tabIgreja" class="tab-content">
             <div class="container">
                 <div class="section-header">
-                    <h2><span class="material-icons-round text-primary" style="color: #10b981;">groups</span> Departamentos</h2>
-                    <p class="text-muted text-sm" style="margin-top: 5px;">Conheça a liderança dos nossos grupos.</p>
+                    <h2><span class="material-icons-round text-primary" style="color: #4f46e5;">account_balance</span> Nossa Igreja</h2>
                 </div>
                 
+                <div class="app-card" style="margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                        <span class="material-icons-round">history_edu</span> Nossa História
+                    </h3>
+                    <p class="text-sm text-muted" style="line-height: 1.6;">
+                        A Assembleia de Deus em Luís Gomes nasceu com o propósito de levar a mensagem de salvação a toda a nossa cidade. 
+                        [Escreva aqui um breve resumo da história, quando começou, os pioneiros, etc].
+                    </p>
+                </div>
+
+                <div class="app-card" style="margin-bottom: 30px;">
+                    <h3 style="color: var(--primary); display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                        <span class="material-icons-round">person_outline</span> Direção
+                    </h3>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <img src="logo.png" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
+                        <div>
+                            <h4 style="font-size: 1.1rem; color: var(--text-main);">Pr. [Nome do Pastor]</h4>
+                            <p class="text-sm text-muted">Pastor Presidente</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--text-main);">Departamentos</h3>
                 <div class="cards-list">
                     <div class="app-card dept-card">
-                        <div class="dept-icon" style="background-color: rgba(79, 70, 229, 0.1); color: #4f46e5;">
-                            <span class="material-icons-round">man</span>
-                        </div>
-                        <div class="dept-info">
-                            <h3>Senhores</h3>
-                            <p><span class="text-muted">Dirigente:</span> Irmão [Nome do Dirigente]</p>
-                        </div>
+                        <div class="dept-icon" style="background-color: rgba(79, 70, 229, 0.1); color: #4f46e5;"><span class="material-icons-round">man</span></div>
+                        <div class="dept-info"><h3>Senhores</h3><p><span class="text-muted">Dirigente:</span> Irmão [Nome]</p></div>
                     </div>
-
                     <div class="app-card dept-card">
-                        <div class="dept-icon" style="background-color: rgba(219, 39, 119, 0.1); color: #db2777;">
-                            <span class="material-icons-round">woman</span>
-                        </div>
-                        <div class="dept-info">
-                            <h3>Senhoras</h3>
-                            <p><span class="text-muted">Dirigente:</span> Irmã [Nome da Dirigente]</p>
-                        </div>
+                        <div class="dept-icon" style="background-color: rgba(219, 39, 119, 0.1); color: #db2777;"><span class="material-icons-round">woman</span></div>
+                        <div class="dept-info"><h3>Senhoras</h3><p><span class="text-muted">Dirigente:</span> Irmã [Nome]</p></div>
                     </div>
-
                     <div class="app-card dept-card">
-                        <div class="dept-icon" style="background-color: rgba(217, 119, 6, 0.1); color: #d97706;">
-                            <span class="material-icons-round">local_fire_department</span>
-                        </div>
-                        <div class="dept-info">
-                            <h3>Jovens</h3>
-                            <p><span class="text-muted">Dirigente:</span> [Nome do Dirigente]</p>
-                        </div>
+                        <div class="dept-icon" style="background-color: rgba(217, 119, 6, 0.1); color: #d97706;"><span class="material-icons-round">local_fire_department</span></div>
+                        <div class="dept-info"><h3>Jovens</h3><p><span class="text-muted">Dirigente:</span> [Nome]</p></div>
                     </div>
-
                     <div class="app-card dept-card">
-                        <div class="dept-icon" style="background-color: rgba(22, 163, 74, 0.1); color: #16a34a;">
-                            <span class="material-icons-round">child_care</span>
-                        </div>
-                        <div class="dept-info">
-                            <h3>Infantil</h3>
-                            <p><span class="text-muted">Dirigente:</span> Tia [Nome da Dirigente]</p>
-                        </div>
+                        <div class="dept-icon" style="background-color: rgba(22, 163, 74, 0.1); color: #16a34a;"><span class="material-icons-round">child_care</span></div>
+                        <div class="dept-info"><h3>Infantil</h3><p><span class="text-muted">Dirigente:</span> Tia [Nome]</p></div>
                     </div>
                 </div>
             </div>
@@ -132,20 +139,16 @@
 
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('tabAgenda', this)">
-                <span class="material-icons-round">event_note</span>
-                <span>Escalas</span>
+                <span class="material-icons-round">event_note</span><span>Escalas</span>
             </button>
             <button class="nav-item" onclick="switchTab('tabMural', this)">
-                <span class="material-icons-round">notifications</span>
-                <span>Avisos</span>
+                <span class="material-icons-round">notifications</span><span>Avisos</span>
             </button>
-            <button class="nav-item" onclick="switchTab('tabDepartamentos', this)">
-                <span class="material-icons-round">groups</span>
-                <span>Grupos</span>
+            <button class="nav-item" onclick="switchTab('tabIgreja', this)">
+                <span class="material-icons-round">account_balance</span><span>A Igreja</span>
             </button>
             <button class="nav-item" onclick="toggleAdminLogin()">
-                <span class="material-icons-round">admin_panel_settings</span>
-                <span>Painel</span>
+                <span class="material-icons-round">admin_panel_settings</span><span>Painel</span>
             </button>
         </nav>
     </main>
@@ -156,16 +159,12 @@
                 <h2>Painel Pastoral</h2>
                 <button onclick="logoutAdmin()" class="btn-outline-danger btn-sm">Sair</button>
             </div>
-
             <div class="dashboard-grid">
                 <div class="dash-card feature-card">
                     <h3>Secretário IA</h3>
-                    <button type="button" class="btn-ia w-100" onclick="iniciarDitadoIA()">
-                        <span class="material-icons-round">mic</span> Ditar Escala
-                    </button>
+                    <button type="button" class="btn-ia w-100" onclick="iniciarDitadoIA()"><span class="material-icons-round">mic</span> Ditar Escala</button>
                     <p id="statusIA" class="status-msg"></p>
                 </div>
-
                 <div class="dash-card">
                     <h3>Nova Escala</h3>
                     <div class="form-grid">
@@ -176,13 +175,11 @@
                     <input type="text" id="dirigentesEscala" placeholder="Dirigentes" class="input-modern">
                     <input type="text" id="porteirosEscala" placeholder="Porteiros" class="input-modern">
                     <button onclick="adicionarItemEscala()" class="btn-outline-primary w-100">+ Adicionar</button>
-
                     <div id="previewEscala" class="preview-box hidden">
                         <ul id="listaPreview"></ul>
                         <button onclick="submitEscalaSemana()" class="btn-primary w-100" id="btnPublicarTudo">Publicar Tudo</button>
                     </div>
                 </div>
-
                 <div class="dash-card">
                     <h3>Aviso</h3>
                     <input type="text" id="tituloAviso" placeholder="Título" class="input-modern">
@@ -190,22 +187,12 @@
                     <button onclick="submitAviso()" class="btn-accent w-100">Enviar Aviso</button>
                 </div>
             </div>
-
             <div class="dash-card mt-4">
                 <h3>Gerenciar Publicados</h3>
                 <div class="table-responsive">
                     <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Evento</th>
-                                <th>Equipe</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaEscalasAdminBody">
-                            <tr><td colspan="4">Carregando...</td></tr>
-                        </tbody>
+                        <thead><tr><th>Data</th><th>Evento</th><th>Equipe</th><th>Ações</th></tr></thead>
+                        <tbody id="tabelaEscalasAdminBody"><tr><td colspan="4">Carregando...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -243,7 +230,6 @@
             <button onclick="copiarPix()" class="btn-accent w-100">Copiar Pix</button>
         </div>
     </div>
-
     <button class="fab-donate" onclick="abrirModalPix()"><span class="material-icons-round">favorite</span></button>
     <div id="toast" class="toast hidden"></div>
     <script src="script.js"></script>
