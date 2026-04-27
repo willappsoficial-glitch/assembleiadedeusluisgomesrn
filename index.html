@@ -3,190 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AD Luís Gomes - Portal Digital</title>
+    <title>AD Luís Gomes - App</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4b0082">
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="AD Luís Gomes">
-    <link rel="apple-touch-icon" href="logo.png">
 </head>
 <body>
 
-    <nav>
-        <div class="logo-container">
+    <header class="topbar">
+        <div class="logo-area">
             <img src="logo.png" alt="Logo AD" class="logo-img"> 
-            <span>AD Luís Gomes</span>
+            <span class="brand-name">AD Luís Gomes</span>
         </div>
-        <div id="userInfo" class="user-info hidden">
-            <span id="userNameDisplay"></span>
-            <button onclick="sairMembro()" class="btn-tiny">Sair</button>
-        </div>
-    </nav>
-
-    <section id="loginSection" class="hero full-height">
-        <div class="hero-content">
-            <h1>Bem-vindo</h1>
-            <p>Identifique-se para acessar as escalas e avisos da igreja.</p>
-
-            <div class="login-card">
-                <input type="text" id="inputNome" placeholder="Seu Nome Completo">
-                <input type="email" id="inputEmail" placeholder="Seu E-mail (para receber avisos)">
-                <button type="button" onclick="entrarMembro()" id="btnEntrar" class="btn-cta">Acessar Sistema</button>
+        <div class="topbar-actions">
+            <button id="themeToggleBtn" class="icon-btn" onclick="toggleDarkMode()" title="Tema Escuro/Claro">
+                <span class="material-icons-round" id="themeIcon">dark_mode</span>
+            </button>
+            <div id="userInfo" class="user-info hidden">
+                <span id="userNameDisplay" class="hide-mobile"></span>
+                <button onclick="sairMembro()" class="icon-btn" title="Sair"><span class="material-icons-round">logout</span></button>
             </div>
-            <p class="disclaimer">Seu e-mail será usado apenas para avisos da igreja.</p>
+        </div>
+    </header>
+
+    <section id="loginSection" class="view-section active view-center">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Bem-vindo</h2>
+                <p>Identifique-se para acessar</p>
+            </div>
+            <div class="input-group">
+                <span class="material-icons-round">person</span>
+                <input type="text" id="inputNome" placeholder="Seu Nome Completo">
+            </div>
+            <div class="input-group">
+                <span class="material-icons-round">email</span>
+                <input type="email" id="inputEmail" placeholder="Seu E-mail">
+            </div>
+            <button type="button" onclick="entrarMembro()" class="btn-primary w-100">Acessar Sistema</button>
         </div>
     </section>
 
     <main id="memberArea" class="hidden">
-        <div class="container content-grid">
-            <div class="main-column">
-                <h2 class="section-title"><span class="material-icons">calendar_today</span> Escala da Semana</h2>
-                <div class="table-responsive">
-                    <table class="escala-table">
-                        <thead>
-                            <tr>
-                                <th>Dia/Hora</th>
-                                <th>Evento</th>
-                                <th>Responsáveis</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaEscalasBody">
-                            <tr><td colspan="3">Carregando...</td></tr>
-                        </tbody>
-                    </table>
+        <section id="tabAgenda" class="tab-content active">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="material-icons-round text-primary">calendar_month</span> Agenda da Semana</h2>
+                </div>
+                
+                <div class="versiculo-card">
+                    <div class="versiculo-header">
+                        <span class="material-icons-round text-accent">auto_stories</span>
+                        <span>Pão Diário</span>
+                    </div>
+                    <p id="textoVersiculo">"Carregando a Palavra..."</p>
+                    <small id="refVersiculo">-</small>
+                </div>
+
+                <div class="cards-list" id="tabelaEscalasBody">
+                    <div class="loading">Carregando agenda...</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tabMural" class="tab-content">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="material-icons-round text-accent">campaign</span> Mural de Avisos</h2>
+                </div>
+                <div class="cards-list" id="avisosContainer">
+                    <div class="loading">Carregando avisos...</div>
+                </div>
+            </div>
+        </section>
+
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('tabAgenda', this)">
+                <span class="material-icons-round">event_note</span>
+                <span>Escalas</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('tabMural', this)">
+                <span class="material-icons-round">notifications</span>
+                <span>Avisos</span>
+            </button>
+            <button class="nav-item" onclick="toggleAdminLogin()">
+                <span class="material-icons-round">admin_panel_settings</span>
+                <span>Liderança</span>
+            </button>
+        </nav>
+    </main>
+
+    <main id="adminPanel" class="hidden admin-layout">
+        <div class="container">
+            <div class="admin-header-flex">
+                <h2>Painel Pastoral</h2>
+                <button onclick="logoutAdmin()" class="btn-outline-danger btn-sm">Sair</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dash-card feature-card">
+                    <h3>Secretário IA</h3>
+                    <button type="button" class="btn-ia w-100" onclick="iniciarDitadoIA()">
+                        <span class="material-icons-round">mic</span> Ditar Escala
+                    </button>
+                    <p id="statusIA" class="status-msg"></p>
+                </div>
+
+                <div class="dash-card">
+                    <h3>Nova Escala</h3>
+                    <div class="form-grid">
+                        <input type="date" id="dataEscala" class="input-modern">
+                        <input type="time" id="horaEscala" class="input-modern">
+                    </div>
+                    <input type="text" id="eventoEscala" placeholder="Evento" class="input-modern">
+                    <input type="text" id="dirigentesEscala" placeholder="Dirigentes" class="input-modern">
+                    <input type="text" id="porteirosEscala" placeholder="Porteiros" class="input-modern">
+                    <button onclick="adicionarItemEscala()" class="btn-outline-primary w-100">+ Adicionar</button>
+
+                    <div id="previewEscala" class="preview-box hidden">
+                        <ul id="listaPreview"></ul>
+                        <button onclick="submitEscalaSemana()" class="btn-primary w-100" id="btnPublicarTudo">Publicar Tudo</button>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h3>Aviso</h3>
+                    <input type="text" id="tituloAviso" placeholder="Título" class="input-modern">
+                    <textarea id="msgAviso" placeholder="Mensagem..." rows="3" class="input-modern"></textarea>
+                    <button onclick="submitAviso()" class="btn-accent w-100">Enviar Aviso</button>
                 </div>
             </div>
 
-            <div class="side-column">
-                <h2 class="section-title"><span class="material-icons">campaign</span> Mural de Avisos</h2>
-                <div id="avisosContainer">
-                    <p>Carregando avisos...</p>
+            <div class="dash-card mt-4">
+                <h3>Gerenciar Publicados</h3>
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Evento</th>
+                                <th>Equipe</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaEscalasAdminBody">
+                            <tr><td colspan="4">Carregando...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="loginModal" class="modal hidden" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="toggleAdminLogin()">&times;</span>
-            <h3>Acesso Pastoral</h3>
-            <p>Área restrita à liderança.</p>
-            <input type="password" id="adminPassword" placeholder="Senha Mestra">
-            <button type="button" onclick="validarAdmin()" class="btn-primary">Entrar no Painel</button>
+    <div id="loginModal" class="modal hidden">
+        <div class="modal-surface">
+            <span class="close-modal" onclick="toggleAdminLogin()">&times;</span>
+            <input type="password" id="adminPassword" placeholder="Senha Mestra" class="input-modern">
+            <button type="button" onclick="validarAdmin()" class="btn-primary w-100">Entrar</button>
         </div>
     </div>
 
-    <div id="adminPanel" class="container hidden admin-wrapper">
-        <div class="admin-header">
-            <h2>Painel do Obreiro</h2>
-            <button onclick="logoutAdmin()" class="btn-small">Sair do Admin</button>
-        </div>
-
-        <div class="admin-grid">
-            <div class="card">
-                <h3>Cadastrar Escala</h3>
-                <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">Use o Assistente de Voz para preencher rápido.</p>
-
-                <button type="button" class="btn-ai-voice" onclick="iniciarDitadoIA()" title="Ditar escala completa">
-                    <span class="material-icons">mic</span> Ditar Escala com IA
-                </button>
-                <p id="statusIA" style="font-size: 0.85rem; color: #ffab40; display: none; margin-bottom: 10px; font-weight: bold; text-align:center;"></p>
-
-                <div class="input-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="date" id="dataEscala">
-                    <input type="time" id="horaEscala">
-                </div>
-                
-                <input type="text" id="eventoEscala" placeholder="Evento (Ex: Culto de Doutrina)">
-                <input type="text" id="dirigentesEscala" placeholder="Dirigentes">
-                <input type="text" id="porteirosEscala" placeholder="Porteiros">
-
-                <button onclick="adicionarItemEscala()" class="btn-secondary" style="margin-bottom:15px;">+ Adicionar à Lista</button>
-
-                <div id="previewEscala" style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:15px; display:none;">
-                    <h4 style="font-size:0.9rem; margin-bottom:5px;">Pronto para enviar:</h4>
-                    <ul id="listaPreview" style="font-size:0.85rem; padding-left:20px; color:#333;"></ul>
-                </div>
-
-                <button onclick="submitEscalaSemana()" class="btn-admin" id="btnPublicarTudo" disabled>Publicar Semana Inteira</button>
+    <div id="modalEditEscala" class="modal hidden">
+        <div class="modal-surface">
+            <span class="close-modal" onclick="fecharModalEdit()">&times;</span>
+            <h3>Editar</h3>
+            <input type="hidden" id="edit-id"> 
+            <div class="form-grid mt-3">
+                <input type="date" id="edit-data" class="input-modern">
+                <input type="time" id="edit-hora" class="input-modern">
             </div>
-
-            <div class="card">
-                <h3>Novo Aviso</h3>
-                <input type="text" id="tituloAviso" placeholder="Título do Aviso">
-                <textarea id="msgAviso" placeholder="Digite a mensagem do aviso..." rows="6"></textarea>
-                <button onclick="submitAviso()" class="btn-admin" style="background-color: var(--accent); color: var(--primary-dark);">Enviar Aviso Agora</button>
-            </div>
-        </div>
-
-        <div class="container admin-view-area">
-            <h3><span class="material-icons">visibility</span> Itens Publicados (Opções de Edição)</h3>
-            <div class="content-grid">
-                <div class="main-column">
-                    <div class="table-responsive">
-                        <table class="escala-table">
-                            <tbody id="tabelaEscalasAdminBody"> 
-                                <tr><td>Carregando...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="side-column">
-                    <div id="avisosContainerAdmin">
-                        <p>Carregando...</p>
-                    </div>
-                </div>
-            </div>
+            <input type="text" id="edit-evento" class="input-modern">
+            <input type="text" id="edit-dirigentes" class="input-modern">
+            <input type="text" id="edit-porteiros" class="input-modern">
+            <button onclick="salvarEdicaoEscala(event)" class="btn-primary w-100" id="btn-salvar-edicao">Salvar</button>
         </div>
     </div>
 
-    <div id="modalEditEscala" class="modal hidden" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="fecharModalEdit()">&times;</span>
-            <h3 style="color:var(--primary); margin-bottom: 15px;">Editar Escala</h3>
-            <form id="formEditEscala" onsubmit="salvarEdicaoEscala(event)">
-                <input type="hidden" id="edit-id"> 
-                <div class="input-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="date" id="edit-data" required>
-                    <input type="time" id="edit-hora" required>
-                </div>
-                <input type="text" id="edit-evento" required placeholder="Evento">
-                <input type="text" id="edit-dirigentes" required placeholder="Dirigentes">
-                <input type="text" id="edit-porteiros" placeholder="Porteiros">
-                <button type="submit" class="btn-primary" id="btn-salvar-edicao">Salvar Alterações</button>
-            </form>
+    <div id="modalPix" class="modal hidden">
+        <div class="modal-surface text-center">
+            <span class="close-modal" onclick="fecharModalPix()">&times;</span>
+            <div class="pix-key-box" id="chavePixTexto">3fe7ebb6-a140-4459-9800-0f7ed58da665</div>
+            <button onclick="copiarPix()" class="btn-accent w-100">Copiar Pix</button>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2025 Assembleia de Deus - Luís Gomes/RN</p>
-        <button type="button" onclick="toggleAdminLogin()" class="btn-footer-link">Área do Obreiro</button>
-        <div class="dev-credits">
-            <span>Desenvolvido por:</span>
-            <a href="https://wa.me/5584996106961" target="_blank" class="dev-link">
-                <span class="material-icons" style="font-size:16px;">code</span> Williano Costa | WillWeb
-            </a>
-        </div>
-    </footer>
-
+    <button class="fab-donate" onclick="abrirModalPix()"><span class="material-icons-round">favorite</span></button>
     <div id="toast" class="toast hidden"></div>
     <script src="script.js"></script>
-
-    <button class="btn-donate-float" onclick="abrirModalPix()">
-        <span class="material-icons">card_giftcard</span>
-    </button>
-
-    <div id="modalPix" class="modal hidden" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="fecharModalPix()">&times;</span>
-            <h3 style="color:var(--primary)">Abençoe este Projeto</h3>
-            <div class="pix-key-box" id="chavePixTexto">3fe7ebb6-a140-4459-9800-0f7ed58da665</div>
-            <button onclick="copiarPix()" class="btn-cta">Copiar Chave Pix</button>
-        </div>
-    </div>
 </body>
 </html>
