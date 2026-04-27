@@ -43,7 +43,6 @@
 
     <main id="memberArea" class="hidden">
         <div class="container content-grid">
-
             <div class="main-column">
                 <h2 class="section-title"><span class="material-icons">calendar_today</span> Escala da Semana</h2>
                 <div class="table-responsive">
@@ -68,7 +67,6 @@
                     <p>Carregando avisos...</p>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -89,10 +87,14 @@
         </div>
 
         <div class="admin-grid">
-
             <div class="card">
                 <h3>Cadastrar Escala</h3>
-                <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">Preencha e clique em "Adicionar à Lista".</p>
+                <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">Use o Assistente de Voz para preencher rápido.</p>
+
+                <button type="button" class="btn-ai-voice" onclick="iniciarDitadoIA()" title="Ditar escala completa">
+                    <span class="material-icons">mic</span> Ditar Escala com IA
+                </button>
+                <p id="statusIA" style="font-size: 0.85rem; color: #ffab40; display: none; margin-bottom: 10px; font-weight: bold; text-align:center;"></p>
 
                 <div class="input-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <input type="date" id="dataEscala">
@@ -106,7 +108,7 @@
                 <button onclick="adicionarItemEscala()" class="btn-secondary" style="margin-bottom:15px;">+ Adicionar à Lista</button>
 
                 <div id="previewEscala" style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:15px; display:none;">
-                    <h4 style="font-size:0.9rem; margin-bottom:5px;">Itens prontos para enviar:</h4>
+                    <h4 style="font-size:0.9rem; margin-bottom:5px;">Pronto para enviar:</h4>
                     <ul id="listaPreview" style="font-size:0.85rem; padding-left:20px; color:#333;"></ul>
                 </div>
 
@@ -115,22 +117,16 @@
 
             <div class="card">
                 <h3>Novo Aviso</h3>
-                <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">Envia um e-mail imediato para todos.</p>
-
                 <input type="text" id="tituloAviso" placeholder="Título do Aviso">
                 <textarea id="msgAviso" placeholder="Digite a mensagem do aviso..." rows="6"></textarea>
-
                 <button onclick="submitAviso()" class="btn-admin" style="background-color: var(--accent); color: var(--primary-dark);">Enviar Aviso Agora</button>
             </div>
-
         </div>
 
         <div class="container admin-view-area">
-            <h3><span class="material-icons">visibility</span> Itens Publicados (Visão do Membro)</h3>
-            
+            <h3><span class="material-icons">visibility</span> Itens Publicados (Opções de Edição)</h3>
             <div class="content-grid">
                 <div class="main-column">
-                    <h4>Escala da Semana Atual</h4>
                     <div class="table-responsive">
                         <table class="escala-table">
                             <tbody id="tabelaEscalasAdminBody"> 
@@ -139,23 +135,39 @@
                         </table>
                     </div>
                 </div>
-
                 <div class="side-column">
-                    <h4>Avisos Ativos</h4>
                     <div id="avisosContainerAdmin">
                         <p>Carregando...</p>
                     </div>
                 </div>
             </div>
         </div>
-        </div> <footer>
-        <p>&copy; 2025 Assembleia de Deus - Luís Gomes/RN</p>
-        
-        <button type="button" onclick="toggleAdminLogin()" class="btn-footer-link">Área do Obreiro</button>
+    </div>
 
+    <div id="modalEditEscala" class="modal hidden" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalEdit()">&times;</span>
+            <h3 style="color:var(--primary); margin-bottom: 15px;">Editar Escala</h3>
+            <form id="formEditEscala" onsubmit="salvarEdicaoEscala(event)">
+                <input type="hidden" id="edit-id"> 
+                <div class="input-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="date" id="edit-data" required>
+                    <input type="time" id="edit-hora" required>
+                </div>
+                <input type="text" id="edit-evento" required placeholder="Evento">
+                <input type="text" id="edit-dirigentes" required placeholder="Dirigentes">
+                <input type="text" id="edit-porteiros" placeholder="Porteiros">
+                <button type="submit" class="btn-primary" id="btn-salvar-edicao">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Assembleia de Deus - Luís Gomes/RN</p>
+        <button type="button" onclick="toggleAdminLogin()" class="btn-footer-link">Área do Obreiro</button>
         <div class="dev-credits">
             <span>Desenvolvido por:</span>
-            <a href="https://wa.me/5584996106961?text=Ol%C3%A1%20Williano,%20vi%20o%20sistema%20da%20AD%20Lu%C3%ADs%20Gomes%20e%20gostaria%20de%20saber%20mais." target="_blank" class="dev-link">
+            <a href="https://wa.me/5584996106961" target="_blank" class="dev-link">
                 <span class="material-icons" style="font-size:16px;">code</span> Williano Costa | WillWeb
             </a>
         </div>
@@ -163,7 +175,8 @@
 
     <div id="toast" class="toast hidden"></div>
     <script src="script.js"></script>
-    <button class="btn-donate-float" onclick="abrirModalPix()" title="Abençoe o Desenvolvedor">
+
+    <button class="btn-donate-float" onclick="abrirModalPix()">
         <span class="material-icons">card_giftcard</span>
     </button>
 
@@ -171,17 +184,8 @@
         <div class="modal-content">
             <span class="close" onclick="fecharModalPix()">&times;</span>
             <h3 style="color:var(--primary)">Abençoe este Projeto</h3>
-            <p style="margin-top:10px; font-size:0.95rem;">O desenvolvimento deste sistema foi uma oferta voluntária. Se você sentir de abençoar o desenvolvedor com qualquer valor, use a chave abaixo:</p>
-            
-            <div class="pix-key-box" id="chavePixTexto">
-                3fe7ebb6-a140-4459-9800-0f7ed58da665
-            </div>
-
-            <button onclick="copiarPix()" class="btn-cta" style="font-size:1rem; padding: 10px;">
-                <span class="material-icons" style="vertical-align:middle; font-size:18px;">content_copy</span> Copiar Chave Pix
-            </button>
-            
-            <p style="font-size:0.8rem; color:#888; margin-top:15px;">Deus abençoe sua vida!</p>
+            <div class="pix-key-box" id="chavePixTexto">3fe7ebb6-a140-4459-9800-0f7ed58da665</div>
+            <button onclick="copiarPix()" class="btn-cta">Copiar Chave Pix</button>
         </div>
     </div>
 </body>
