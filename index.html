@@ -46,6 +46,7 @@
     </section>
 
     <main id="memberArea" class="hidden">
+        
         <section id="tabAgenda" class="tab-content active">
             <div class="container">
                 <div class="section-header">
@@ -78,6 +79,57 @@
             </div>
         </section>
 
+        <section id="tabDepartamentos" class="tab-content">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="material-icons-round text-primary" style="color: #10b981;">groups</span> Departamentos</h2>
+                    <p class="text-muted text-sm" style="margin-top: 5px;">Conheça a liderança dos nossos grupos.</p>
+                </div>
+                
+                <div class="cards-list">
+                    <div class="app-card dept-card">
+                        <div class="dept-icon" style="background-color: rgba(79, 70, 229, 0.1); color: #4f46e5;">
+                            <span class="material-icons-round">man</span>
+                        </div>
+                        <div class="dept-info">
+                            <h3>Senhores</h3>
+                            <p><span class="text-muted">Dirigente:</span> Irmão [Nome do Dirigente]</p>
+                        </div>
+                    </div>
+
+                    <div class="app-card dept-card">
+                        <div class="dept-icon" style="background-color: rgba(219, 39, 119, 0.1); color: #db2777;">
+                            <span class="material-icons-round">woman</span>
+                        </div>
+                        <div class="dept-info">
+                            <h3>Senhoras</h3>
+                            <p><span class="text-muted">Dirigente:</span> Irmã [Nome da Dirigente]</p>
+                        </div>
+                    </div>
+
+                    <div class="app-card dept-card">
+                        <div class="dept-icon" style="background-color: rgba(217, 119, 6, 0.1); color: #d97706;">
+                            <span class="material-icons-round">local_fire_department</span>
+                        </div>
+                        <div class="dept-info">
+                            <h3>Jovens</h3>
+                            <p><span class="text-muted">Dirigente:</span> [Nome do Dirigente]</p>
+                        </div>
+                    </div>
+
+                    <div class="app-card dept-card">
+                        <div class="dept-icon" style="background-color: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                            <span class="material-icons-round">child_care</span>
+                        </div>
+                        <div class="dept-info">
+                            <h3>Infantil</h3>
+                            <p><span class="text-muted">Dirigente:</span> Tia [Nome da Dirigente]</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('tabAgenda', this)">
                 <span class="material-icons-round">event_note</span>
@@ -87,9 +139,13 @@
                 <span class="material-icons-round">notifications</span>
                 <span>Avisos</span>
             </button>
+            <button class="nav-item" onclick="switchTab('tabDepartamentos', this)">
+                <span class="material-icons-round">groups</span>
+                <span>Grupos</span>
+            </button>
             <button class="nav-item" onclick="toggleAdminLogin()">
                 <span class="material-icons-round">admin_panel_settings</span>
-                <span>Liderança</span>
+                <span>Painel</span>
             </button>
         </nav>
     </main>
