@@ -1,506 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-    --primary: #4b0082; /* Roxo Indigo */
-    --primary-dark: #30005a;
-    --accent: #ffab40; /* Laranja Dourado */
-    --bg: #f4f6f8;
-    --white: #ffffff;
-    --text: #333333;
-    --gray: #666666;
+    /* Cores Padrão (Claro) */
+    --bg-base: #f1f5f9;
+    --surface: #ffffff;
+    --primary: #4f46e5; /* Indigo mais vibrante e tech */
+    --primary-dark: #3730a3;
+    --accent: #f59e0b;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
 }
 
-/* RESET GLOBAL */
-* { 
-    box-sizing: border-box; /* Essencial: Padding não aumenta largura */
-    margin: 0; 
-    padding: 0; 
-    font-family: 'Segoe UI', sans-serif; 
+body.dark-mode {
+    /* Cores Modo Escuro */
+    --bg-base: #0f172a;
+    --surface: #1e293b;
+    --primary: #6366f1;
+    --primary-dark: #818cf8;
+    --accent: #fbbf24;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --shadow-card: 0 10px 15px -3px rgba(0,0,0,0.3);
 }
 
-html, body {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden !important; /* Corta rolagem lateral indesejada */
-    position: relative;
-    background-color: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
-/* NAVEGAÇÃO */
-nav {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 5%; background: var(--primary); color: var(--white);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    width: 100%;
-}
-.logo-container { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.2rem; }
+body { background: var(--bg-base); color: var(--text-main); min-height: 100vh; padding-bottom: 70px; transition: background 0.3s, color 0.3s; }
+.hidden { display: none !important; }
+.mt-2 { margin-top: 10px; } .mt-3 { margin-top: 15px; } .mt-4 { margin-top: 25px; }
+.w-100 { width: 100%; } .text-center { text-align: center; }
+.text-primary { color: var(--primary); } .text-accent { color: var(--accent); } .text-muted { color: var(--text-muted); } .text-sm { font-size: 0.85rem; }
 
-.logo-img {
-    width: 45px; height: 45px;
-    border-radius: 50%; object-fit: cover;
-    border: 2px solid white;
-}
+/* TOPBAR */
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 5%; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; transition: 0.3s; }
+.logo-area { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-main); }
+.logo-img { width: 36px; height: 36px; border-radius: 50%; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.icon-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 50%; transition: 0.2s; display: flex; align-items: center; }
+.icon-btn:hover { background: var(--bg-base); color: var(--primary); }
+.user-info { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 500; }
 
-.user-info { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
-.btn-tiny { background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+/* LAYOUT E CONTAINERS */
+.container { max-width: 1000px; margin: 0 auto; padding: 20px 15px; }
+.view-section { display: none; animation: fadeIn 0.3s; }
+.view-section.active { display: block; }
+.view-center { min-height: calc(100vh - 60px); display: flex; align-items: center; justify-content: center; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* HERO & LOGIN */
-.hero {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: var(--white); text-align: center; padding: 4rem 1rem;
-    position: relative; width: 100%;
-}
+/* CARDS E FORMULÁRIOS */
+.auth-card { background: var(--surface); padding: 35px 25px; border-radius: var(--radius-lg); width: 100%; max-width: 400px; box-shadow: var(--shadow-card); border: 1px solid var(--border); text-align: center; }
+.auth-header { margin-bottom: 25px; }
+.auth-header h2 { color: var(--primary); font-size: 1.8rem; }
+.auth-header p { color: var(--text-muted); font-size: 0.9rem; }
 
-.full-height { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.input-group { display: flex; align-items: center; background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0 15px; margin-bottom: 15px; transition: 0.2s; }
+.input-group:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+.input-group .material-icons-round { color: var(--text-muted); font-size: 20px; }
+.input-group input { flex: 1; background: transparent; border: none; padding: 15px 10px; color: var(--text-main); font-size: 1rem; outline: none; }
 
-.login-card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    padding: 40px; border-radius: 15px; margin-top: 30px;
-    width: 100%; max-width: 400px;
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-}
-.login-card input { background: rgba(255,255,255,0.95); border: none; color: #333; }
-.disclaimer { font-size: 0.8rem; opacity: 0.7; margin-top: 15px; }
+.input-modern { width: 100%; background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 15px; color: var(--text-main); font-size: 0.95rem; margin-bottom: 12px; outline: none; transition: 0.2s; }
+.input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* BOTÕES */
-.btn-cta { background: var(--accent); color: var(--primary-dark); border: none; padding: 12px 30px; font-weight: bold; font-size: 1.1rem; border-radius: 30px; width: 100%; cursor: pointer; }
-.btn-primary { background: var(--primary); color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-.btn-admin { background: var(--text); color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-.btn-secondary { width: 100%; padding: 10px; background: #eee; border: none; border-radius: 6px; cursor: pointer; margin-top: 5px; }
-.btn-small { padding: 5px 15px; background: #ddd; border: none; border-radius: 4px; cursor: pointer; }
+button { font-family: 'Inter', sans-serif; cursor: pointer; }
+.btn-primary { background: var(--primary); color: #fff; padding: 14px; border: none; border-radius: var(--radius-md); font-weight: 600; font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-accent { background: var(--accent); color: #000; padding: 14px; border: none; border-radius: var(--radius-md); font-weight: 600; font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2); }
+.btn-accent:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-outline-primary { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 12px; border-radius: var(--radius-md); font-weight: 600; transition: 0.2s; }
+.btn-outline-primary:hover { background: rgba(79, 70, 229, 0.1); }
+.btn-outline-danger { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 50px; font-weight: 500; font-size: 0.85rem; }
+.btn-ia { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px; border-radius: var(--radius-md); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
 
-/* LAYOUT GERAL */
-.container { max-width: 1100px; margin: 0 auto; padding: 20px; width: 100%; }
-.content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 20px; }
-.card { background: var(--white); padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; }
-input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+/* APP VIEW (ESCALAS E MURAL) */
+.tab-content { display: none; animation: fadeIn 0.3s; }
+.tab-content.active { display: block; }
+.section-header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.section-header h2 { display: flex; align-items: center; gap: 8px; font-size: 1.3rem; }
 
-/* TABELA DE ESCALAS (Versão Desktop) */
-.table-responsive { overflow-x: auto; background: var(--white); border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.escala-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.escala-table th { background: var(--primary); color: var(--white); padding: 15px; text-align: left; }
-.escala-table td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
+/* CARD DE ESCALA NOVO ESTILO */
+.cards-list { display: flex; flex-direction: column; gap: 15px; }
+.app-card { background: var(--surface); border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-card); position: relative; overflow: hidden; }
+.app-card.hoje { border: 2px solid var(--accent); }
+.app-card.passado { opacity: 0.6; filter: grayscale(50%); }
+.card-data-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--bg-base); padding: 6px 12px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 12px; }
+.card-title { font-size: 1.2rem; margin-bottom: 10px; color: var(--text-main); font-weight: 700; }
+.card-details p { display: flex; gap: 8px; font-size: 0.95rem; margin-bottom: 6px; color: var(--text-muted); }
+.card-details .material-icons-round { font-size: 18px; color: var(--text-muted); }
 
-/* MURAL DE AVISOS */
-.aviso-item { 
-    background: var(--white); 
-    padding: 20px; 
-    border-left: 5px solid var(--accent); 
-    margin-bottom: 15px; 
-    border-radius: 4px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    width: 100%;
-}
-.aviso-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
-.aviso-title { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
-.aviso-date { font-size: 0.8rem; color: #999; }
+/* MURAL AVISOS */
+.aviso-card { background: var(--surface); border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border); border-left: 4px solid var(--accent); box-shadow: var(--shadow-card); }
+.aviso-card h3 { color: var(--primary); font-size: 1.1rem; margin-bottom: 5px; }
 
-/* ADMIN */
-.admin-wrapper { border-top: 4px solid var(--primary); margin-top: 50px; background-color: #fff; padding-top: 30px; }
-.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.admin-view-area { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #ccc; }
-.admin-view-area h3 { margin-bottom: 15px; color: var(--primary); }
+/* BOTTOM NAVIGATION (MOBILE) */
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 5px 15px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); z-index: 900; }
+.nav-item { flex: 1; background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 500; transition: 0.2s; }
+.nav-item.active { color: var(--primary); }
+.nav-item .material-icons-round { font-size: 24px; transition: 0.2s; }
+.nav-item.active .material-icons-round { transform: translateY(-2px); }
 
-/* MODAL */
-.modal { 
-    position: fixed !important; top: 0 !important; left: 0 !important; 
-    width: 100% !important; height: 100% !important; 
-    background: rgba(0,0,0,0.85) !important; z-index: 99999 !important; 
-    display: flex; align-items: center; justify-content: center; 
-}
-.modal-content { 
-    background: white; padding: 30px; border-radius: 10px; 
-    width: 90%; max-width: 400px; text-align: center; position: relative; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-.close { position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; padding: 5px; }
+/* ADMIN DASHBOARD */
+.admin-layout { padding-bottom: 30px; }
+.admin-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.dash-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow-card); }
+.dash-card h3 { font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: var(--text-main); }
+.feature-card { background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0.1) 100%); border-color: rgba(79, 70, 229, 0.2); }
+.status-msg { font-size: 0.85rem; color: #f59e0b; margin-top: 8px; text-align: center; font-weight: 600; min-height: 20px; }
+.preview-box { background: var(--bg-base); border-radius: var(--radius-md); padding: 15px; margin-top: 15px; font-size: 0.9rem; }
+.preview-box ul { padding-left: 20px; margin: 10px 0; color: var(--text-muted); }
 
-/* FOOTER */
-footer { text-align: center; padding: 30px; background: #e0e0e0; color: #666; margin-top: auto; width: 100%; }
-.btn-footer-link { background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-size: 0.85rem; margin-top: 10px; }
+/* TABELA ADMIN */
+.table-responsive { overflow-x: auto; }
+.table-modern { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 500px;}
+.table-modern th { text-align: left; padding: 12px; color: var(--text-muted); font-weight: 600; border-bottom: 2px solid var(--border); }
+.table-modern td { padding: 15px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+
+/* MODALS E FAB */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+.modal-surface { background: var(--surface); padding: 30px; border-radius: var(--radius-lg); width: 90%; max-width: 400px; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid var(--border); }
+.close-modal { position: absolute; top: 15px; right: 15px; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+.fab-donate { position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #ef4444; color: white; border: none; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 800; transition: 0.3s; }
+.fab-donate:hover { transform: scale(1.05); }
+.fab-donate .material-icons-round { font-size: 28px; }
+.pix-key-box { background: var(--bg-base); padding: 15px; border-radius: var(--radius-md); font-family: monospace; font-size: 1.1rem; margin: 20px 0; word-break: break-all; border: 1px dashed var(--border); color: var(--text-main); }
 
 /* TOAST */
-.toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 50px; z-index: 2000; animation: slideUp 0.3s ease; }
-@keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--surface); padding: 12px 24px; border-radius: 50px; z-index: 3000; font-weight: 500; font-size: 0.9rem; white-space: nowrap; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.9); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
 
-.hidden { display: none !important; visibility: hidden !important; opacity: 0 !important; }
-
-/* DESTAQUE GLOBAL */
-.destaque-hoje {
-    background-color: #fff9c4 !important;
-    border-left: 5px solid var(--accent) !important;
-    transform: scale(1.005);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+/* RESPONSIVO DESKTOP FIX */
+@media (min-width: 769px) {
+    .bottom-nav { display: none; }
+    #memberArea { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .tab-content { display: block !important; flex: 1; }
+    .fab-donate { bottom: 30px; right: 30px; width: 64px; height: 64px; }
 }
 
 /* ======================================================== */
-/* MOBILE RESPONSIVO (A MÁGICA ACONTECE AQUI)             */
+/* CARD DO VERSÍCULO DO DIA                                 */
 /* ======================================================== */
-@media (max-width: 768px) {
-    html { font-size: 14px; } 
-
-    /* Ajuste de Espaçamento Geral */
-    .container { 
-        padding: 10px; 
-        width: 100%; 
-        max-width: 100vw;
-        overflow: hidden; /* Previne rolagem lateral do container */
-    }
-    
-    .content-grid, .admin-grid { grid-template-columns: 1fr; gap: 15px; }
-
-    /* Ajuste da Navegação e Rodapé */
-    nav, footer { padding-left: 10px; padding-right: 10px; }
-
-    /* ---------------------------------- */
-    /* AVISOS: Correção de Texto Cortado  */
-    /* ---------------------------------- */
-    .aviso-item {
-        padding: 15px; /* Reduz padding pra sobrar espaço pro texto */
-        width: 100%;
-        
-        /* Quebra de linha forçada para não cortar */
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        word-break: break-word;
-        hyphens: auto; /* Adiciona hífen se precisar quebrar palavra */
-    }
-
-    .aviso-header {
-        flex-direction: column; /* Data abaixo do título no celular */
-        align-items: flex-start;
-    }
-    .aviso-date {
-        margin-top: 4px;
-        font-size: 0.75rem;
-    }
-
-    /* ---------------------------------- */
-    /* ESCALA: Correção dos Cards         */
-    /* ---------------------------------- */
-    .table-responsive {
-        overflow-x: hidden !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        padding: 0;
-        margin: 0;
-        border: none;
-    }
-    
-    .escala-table, tbody, tr, td {
-        display: block; width: 100%;
-    }
-    
-    .escala-table thead { display: none; }
-    
-    .escala-table tr {
-        background: #fff; 
-        margin-bottom: 12px;
-        border-radius: 8px; 
-        padding: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra suave */
-        border: 1px solid #eee;
-        
-        /* Flexbox para garantir que o conteúdo flua verticalmente */
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Correção do Destaque no Mobile */
-    .escala-table tr.destaque-hoje {
-        background-color: #fff9c4 !important; 
-        border: 2px solid var(--accent) !important;
-        transform: none !important; /* Remove zoom pra evitar quebra de layout */
-    }
-    
-    .escala-table td { 
-        padding: 5px 0; 
-        border: none; 
-        text-align: left; 
-        width: 100%;
-        
-        /* Garante que nomes longos (Dirigentes) quebrem linha */
-        white-space: normal;
-        word-wrap: break-word;
-    }
-
-    /* Estilo Específico para as células no Mobile */
-    .escala-table td:nth-child(1) { /* Data e Hora */
-        border-bottom: 1px solid #f0f0f0;
-        padding-bottom: 8px;
-        margin-bottom: 8px;
-        display: flex;
-        justify-content: space-between; /* Coloca Dia e Hora lado a lado */
-        align-items: center;
-    }
-    
-    /* Inputs */
-    .input-row { grid-template-columns: 1fr !important; }
-}
-
-/* ========================================== */
-/* CORREÇÃO FINAL DE LARGURA (MOBILE PATCH)   */
-/* ========================================== */
-@media (max-width: 768px) {
-
-    /* 1. O Pulo do Gato para Grid/Flex não estourarem */
-    .content-grid, .admin-grid, .side-column, .main-column {
-        display: block !important; /* Desativa grid complexo no mobile */
-        width: 100% !important;
-        min-width: 0 !important; /* Permite encolher */
-        margin: 0 !important;
-    }
-
-    /* 2. Força bruta no Mural de Avisos */
-    .aviso-item {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        
-        /* Essas 3 linhas juntas são a "armadilha" para texto longo */
-        word-break: break-word !important;
-        overflow-wrap: anywhere !important; /* Quebra até links gigantes */
-        white-space: normal !important;
-    }
-
-    /* 3. Garante que o texto dentro não tenha margens negativas */
-    .aviso-item p, .aviso-title {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    /* 4. Ajuste fino na tabela de escala para não vazar */
-    .escala-table tr {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    /* 5. Segurança Final: Container Global */
-    .container {
-        padding-left: 15px !important;
-        padding-right: 15px !important;
-        width: 100vw !important; /* Trava na largura da viewport */
-        max-width: 100vw !important;
-        overflow-x: hidden !important;
-    }
-}
-
-/* ================================================= */
-/* CORREÇÃO FINAL: ESCALA DA SEMANA (MOBILE PATCH)   */
-/* ================================================= */
-/* ======================================================== */
-/* MOBILE RESPONSIVO - CORREÇÃO DEFINITIVA DE LARGURA      */
-/* ======================================================== */
-@media (max-width: 768px) {
-
-    /* 1. ZERAR A LARGURA MÍNIMA (O Grande Vilão) */
-    .table-responsive, 
-    .escala-table {
-        min-width: 0 !important; /* Mata o limite de 600px */
-        width: 100% !important;
-        display: block !important; /* Deixa de ser tabela, vira bloco */
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-    }
-
-    /* 2. Transformar as linhas (TR) em Cartões */
-    .escala-table tr {
-        display: flex !important;     /* Flexbox vertical */
-        flex-direction: column !important;
-        width: 100% !important;
-        min-width: 0 !important;      /* Permite encolher */
-        background: #fff;
-        margin-bottom: 15px;
-        padding: 15px !important;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        box-sizing: border-box !important; /* Padding não estoura largura */
-    }
-
-    /* 3. Ajuste das Células (TD) para quebrar texto */
-    .escala-table td {
-        display: block !important;
-        width: 100% !important;
-        padding: 5px 0 !important;
-        border: none !important;
-        
-        /* OBRIGA o texto a quebrar */
-        white-space: normal !important;
-        word-wrap: break-word !important;
-        word-break: break-word !important;
-        overflow-wrap: anywhere !important; /* Quebra links e datas longas */
-    }
-
-    /* 4. Layout Específico: Data e Hora no Topo */
-    .escala-table td:nth-child(1) {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        border-bottom: 1px solid #eee !important;
-        padding-bottom: 10px !important;
-        margin-bottom: 10px !important;
-    }
-
-    /* 5. Ajuste dos Avisos (Mural) */
-    .aviso-item {
-        width: 100% !important;
-        min-width: 0 !important;
-        box-sizing: border-box !important;
-        word-break: break-word !important;
-    }
-
-    /* 6. Inputs e Botões não podem passar de 100% */
-    input, select, textarea, .input-row {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-    
-    /* 7. Destaque Amarelo no Mobile */
-    .escala-table tr.destaque-hoje {
-        background-color: #fff9c4 !important;
-        border: 2px solid var(--accent) !important;
-        transform: none !important;
-    }
-}
-
-/* --- CRÉDITOS DO RODAPÉ (WhatsApp) --- */
-.dev-credits {
-    margin-top: 15px;
-    font-size: 0.8rem;
-    color: #888;
-    border-top: 1px solid #ccc;
-    padding-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.dev-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: 0.2s;
-}
-.dev-link:hover { color: var(--accent); }
-
-/* --- BOTÃO FLUTUANTE DE DOAÇÃO --- */
-.btn-donate-float {
-    position: fixed;
-    bottom: 20px;
-    left: 20px; /* Fica na esquerda para não brigar com o Toast na direita */
-    background-color: #25d366; /* Verde esperança/WhatsApp ou use var(--accent) */
+.versiculo-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    cursor: pointer;
-    z-index: 1000;
-    transition: transform 0.2s;
-    border: none;
+    padding: 25px 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 25px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.btn-donate-float:hover {
-    transform: scale(1.1);
+/* Um leve brilho no fundo do card */
+.versiculo-card::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
 }
 
-.btn-donate-float .material-icons { font-size: 24px; }
-
-/* Ajuste do Modal de Pix */
-.pix-key-box {
-    background: #f0f0f0;
-    padding: 10px;
-    border-radius: 5px;
-    font-family: monospace;
-    font-size: 1.1rem;
-    margin: 15px 0;
-    word-break: break-all;
-    border: 1px dashed #999;
+.versiculo-header {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 12px; font-size: 0.85rem; text-transform: uppercase;
+    letter-spacing: 1.5px; font-weight: 700; color: rgba(255,255,255,0.8);
+    position: relative; z-index: 2;
 }
 
-/* ========================================================== */
-/* CORREÇÃO FINAL: RODAPÉ E BOTÃO DE DOAÇÃO (MOBILE PATCH 2) */
-/* ========================================================== */
-@media (max-width: 768px) {
-
-    /* 1. O BOTÃO FLUTUANTE (Balãozinho) */
-    .btn-donate-float {
-        /* Aumenta o tamanho para facilitar o toque */
-        width: 60px !important;
-        height: 60px !important;
-        
-        /* Ajusta a posição para não ficar escondido na curva da tela */
-        bottom: 25px !important;
-        left: 20px !important;
-        
-        /* O IMPORTANTE: Garante que fique SOBRE qualquer outra coisa */
-        z-index: 999999 !important; 
-        
-        /* Sombra mais forte para destacar */
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
-    }
-    
-    .btn-donate-float .material-icons {
-        font-size: 30px !important; /* Ícone maior */
-    }
-
-    /* 2. O RODAPÉ (Visual e Clique) */
-    footer {
-        padding-bottom: 90px !important; /* Dá espaço extra pro botão não cobrir o texto */
-        position: relative !important;
-        z-index: 10 !important; /* Garante que o rodapé não fique "soterrado" */
-    }
-
-    /* 3. CRÉDITOS DO DESENVOLVEDOR */
-    .dev-credits {
-        display: flex !important;
-        flex-direction: column !important; /* Empilha: Texto em cima, Link embaixo */
-        align-items: center !important;
-        gap: 10px !important;
-        margin-top: 20px !important;
-        padding-top: 15px !important;
-        border-top: 1px solid #ccc !important;
-        width: 100% !important;
-    }
-
-    /* 4. LINK DO WHATSAPP (Ajuste de toque) */
-    .dev-link {
-        font-size: 1rem !important; /* Letra maior */
-        padding: 12px 20px !important; /* Cria uma área "clicável" grande */
-        background-color: rgba(0,0,0,0.05); /* Fundo cinza claro para parecer botão */
-        border-radius: 50px; /* Borda redonda */
-        width: 100% !important; /* Ocupa a largura toda pra ser fácil de clicar */
-        text-align: center;
-        justify-content: center;
-        color: var(--primary) !important;
-        text-decoration: none !important;
-    }
+#textoVersiculo {
+    font-size: 1.15rem; font-style: italic; font-weight: 500;
+    line-height: 1.5; margin-bottom: 10px; position: relative; z-index: 2;
 }
 
-/* --- ITEM DE DIA PASSADO (APAGADO) --- */
-.item-passado {
-    opacity: 0.5 !important; /* Fica 50% transparente */
-    filter: grayscale(100%) !important; /* Remove cores (fica cinza) */
-    background-color: #f4f4f4 !important; /* Fundo cinza claro */
-    border-color: #e0e0e0 !important;
+#refVersiculo {
+    font-size: 0.95rem; font-weight: 700; color: var(--accent);
+    position: relative; z-index: 2;
 }
