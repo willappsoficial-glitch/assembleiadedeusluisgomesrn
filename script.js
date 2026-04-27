@@ -1,6 +1,8 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyg4gz8cGyrRpDEG989Kgw1fAnrjzzz7jYAyqbuLTXig2iO396iTMYJiukmkoei5GU8/exec'; 
 
 window.onload = function() {
+    initTheme();
+    carregarVersiculo();
     if (localStorage.getItem('churchAdminPass')) {
         verificarSessaoAdmin();
     } else {
@@ -9,148 +11,122 @@ window.onload = function() {
     carregarDados();
 };
 
-// --- DIGITAÇÃO E PROCESSAMENTO COM IA ---
-function iniciarDitadoIA() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert("Navegador não suporta voz.");
-        return;
+function initTheme() {
+    const isDark = localStorage.getItem('ad_theme_dark') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeIcon').innerText = 'light_mode';
     }
+}
 
+function toggleDarkMode() {
+    const body = document.body;
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    localStorage.setItem('ad_theme_dark', isDark);
+    document.getElementById('themeIcon').innerText = isDark ? 'light_mode' : 'dark_mode';
+}
+
+function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
+}
+
+function iniciarDitadoIA() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return alert("Navegador incompatível.");
     const recognition = new SpeechRecognition();
     recognition.lang = 'pt-BR';
-    
     const statusText = document.getElementById('statusIA');
-    statusText.style.display = 'block';
-    statusText.innerText = "Escutando... Pode falar a escala completa.";
-    statusText.style.color = "#ffab40";
-
+    statusText.innerText = "Escutando...";
     recognition.start();
 
     recognition.onresult = async function(event) {
-        const textoFalado = event.results[0][0].transcript;
-        statusText.innerText = "Processando com IA...";
-        statusText.style.color = "#25d366";
-
-        const res = await fetchData('processarTextoGemini', { texto: textoFalado });
-        
+        const texto = event.results[0][0].transcript;
+        statusText.innerText = "IA Processando...";
+        const res = await fetchData('processarTextoGemini', { texto: texto });
         if(res && res.success) {
             document.getElementById('dataEscala').value = res.dados.data || '';
             document.getElementById('horaEscala').value = res.dados.hora || '';
             document.getElementById('eventoEscala').value = res.dados.evento || '';
             document.getElementById('dirigentesEscala').value = res.dados.dirigentes || '';
             document.getElementById('porteirosEscala').value = res.dados.porteiros || '';
-            statusText.innerText = "Campos preenchidos!";
+            statusText.innerText = "Pronto!";
         } else {
-            statusText.innerText = "IA falhou. Tente novamente.";
-            statusText.style.color = "red";
+            statusText.innerText = "Erro na IA";
         }
-        setTimeout(() => { statusText.style.display = 'none'; }, 4000);
+        setTimeout(() => statusText.innerText = '', 3000);
     };
 }
 
-// --- LÓGICA DE DADOS ---
 async function fetchData(action, params = {}) {
     if (['getEscalas', 'getAvisos'].includes(action)) {
         try {
-            const response = await fetch(`${API_URL}?action=${action}`);
-            return await response.json();
+            const r = await fetch(`${API_URL}?action=${action}`);
+            return await r.json();
         } catch (e) { return []; }
     } else {
-        const payload = { action: action, ...params };
+        const p = { action: action, ...params };
         try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            return await response.json();
+            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
+            return await r.json();
         } catch (e) { return { erro: true }; }
     }
 }
 
 async function carregarDados() {
     const avisos = await fetchData('getAvisos');
-    renderizarAvisos('avisosContainer', avisos);      
-    renderizarAvisos('avisosContainerAdmin', avisos); 
-
+    renderizarAvisos('avisosContainer', avisos);
     const escalas = await fetchData('getEscalas');
-    let escalasSemana = filtrarSemanaAtual(escalas);
-
-    escalasSemana.sort((a, b) => {
-        const dataA = parseDataSegura(a.data);
-        const dataB = parseDataSegura(b.data);
-        if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
-        return formatarHoraGoogle(a.hora).localeCompare(formatarHoraGoogle(b.hora));
-    });
-
-    renderizarEscala('tabelaEscalasBody', escalasSemana, false);      
-    renderizarEscala('tabelaEscalasAdminBody', escalasSemana, true); 
+    let filtradas = filtrarSemanaAtual(escalas);
+    filtradas.sort((a, b) => parseDataSegura(a.data) - parseDataSegura(b.data));
+    renderizarEscalaCards('tabelaEscalasBody', filtradas);
+    renderizarEscalaAdmin('tabelaEscalasAdminBody', filtradas);
 }
 
-function renderizarEscala(elementId, dados, isAdmin = false) {
-    const tbody = document.getElementById(elementId);
-    if (!tbody) return; 
-    tbody.innerHTML = "";
-
-    const hoje = new Date();
-    hoje.setHours(0,0,0,0);
-    const nomesDias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
-
+function renderizarEscalaAdmin(id, dados) {
+    const tbody = document.getElementById(id);
+    if (!tbody) return; tbody.innerHTML = "";
     dados.forEach(e => {
-        const dataEvento = parseDataSegura(e.data);
-        const isHoje = dataEvento && dataEvento.toDateString() === hoje.toDateString();
-        const isPassado = dataEvento && dataEvento < hoje;
-
-        let classeRow = isHoje ? "destaque-hoje" : (isPassado ? "item-passado" : "");
-        let horaFormatada = formatarHoraGoogle(e.hora);
-        
-        let acoesAdmin = isAdmin ? `
-            <div style="margin-top:10px; border-top:1px dashed #ccc; padding-top:5px; text-align:center;">
-                <button onclick="abrirModalEdit('${e.linha}', '${e.data}', '${horaFormatada}', '${e.evento}', '${e.dirigentes}', '${e.porteiros}')" class="btn-tiny" style="background:var(--primary); color:white;">
-                   <span class="material-icons" style="font-size:12px">edit</span> Editar
-                </button>
-            </div>` : "";
-
+        let h = formatarHoraGoogle(e.hora);
         tbody.innerHTML += `
-            <tr class="${classeRow}">
-                <td>
-                    <small>${nomesDias[dataEvento.getDay()]}</small><br>
-                    <b>${dataEvento.toLocaleDateString('pt-BR')}</b><br>
-                    <span style="color:var(--primary)">${horaFormatada}</span>
-                </td>
-                <td><strong>${e.evento}</strong></td>
-                <td>
-                    <small>Dir:</small> <b>${e.dirigentes}</b><br>
-                    <small>Port:</small> ${e.porteiros}
-                    ${acoesAdmin}
+            <tr>
+                <td>${parseDataSegura(e.data).toLocaleDateString('pt-BR')}<br>${h}</td>
+                <td>${e.evento}</td>
+                <td style="font-size:0.8rem">D: ${e.dirigentes}<br>P: ${e.porteiros}</td>
+                <td style="white-space:nowrap">
+                    <button onclick="abrirModalEdit('${e.linha}','${e.data}','${h}','${e.evento}','${e.dirigentes}','${e.porteiros}')" class="btn-tiny" style="color:var(--primary)"><span class="material-icons-round" style="font-size:18px">edit</span></button>
+                    <button onclick="confirmarExcluir('${e.linha}')" class="btn-tiny" style="color:#ef4444"><span class="material-icons-round" style="font-size:18px">delete</span></button>
                 </td>
             </tr>`;
     });
 }
 
-// --- FUNÇÕES DE EDIÇÃO ---
+async function confirmarExcluir(linha) {
+    if(confirm("Deseja realmente excluir este evento?")) {
+        showToast("Excluindo...");
+        const res = await fetchData('excluirEscala', { senha: localStorage.getItem('churchAdminPass'), linha: linha });
+        if(res.success) { showToast("Excluído!"); carregarDados(); }
+    }
+}
+
+// --- RESTO DAS FUNÇÕES DE APOIO ---
 function abrirModalEdit(id, data, hora, evento, dirigentes, porteiros) {
     document.getElementById('edit-id').value = id;
-    if(data.includes('/')) {
-        const p = data.split('/');
-        document.getElementById('edit-data').value = `${p[2]}-${p[1]}-${p[0]}`;
-    } else {
-        document.getElementById('edit-data').value = data.substring(0,10);
-    }
+    document.getElementById('edit-data').value = data.includes('/') ? data.split('/').reverse().join('-') : data.substring(0,10);
     document.getElementById('edit-hora').value = hora;
     document.getElementById('edit-evento').value = evento;
     document.getElementById('edit-dirigentes').value = dirigentes;
     document.getElementById('edit-porteiros').value = porteiros;
-    document.getElementById('modalEditEscala').style.display = 'flex';
+    document.getElementById('modalEditEscala').classList.remove('hidden');
 }
 
-function fecharModalEdit() { document.getElementById('modalEditEscala').style.display = 'none'; }
+function fecharModalEdit() { document.getElementById('modalEditEscala').classList.add('hidden'); }
 
 async function salvarEdicaoEscala(event) {
     event.preventDefault();
-    const btn = document.getElementById('btn-salvar-edicao');
-    btn.innerText = "Salvando...";
-    
     const res = await fetchData('editarEscala', {
         senha: localStorage.getItem('churchAdminPass'),
         linha: document.getElementById('edit-id').value,
@@ -160,43 +136,71 @@ async function salvarEdicaoEscala(event) {
         dirigentes: document.getElementById('edit-dirigentes').value,
         porteiros: document.getElementById('edit-porteiros').value
     });
-
-    if(res.success) {
-        fecharModalEdit();
-        showToast("Atualizado!");
-        carregarDados();
-    }
-    btn.innerText = "Salvar Alterações";
+    if(res.success) { fecharModalEdit(); showToast("Atualizado!"); carregarDados(); }
 }
 
-// --- RESTANTE DAS FUNÇÕES (LOGIN, PREVIEW, ETC) ---
+function carregarVersiculo() {
+    const versiculos = [
+        { texto: "Tudo posso naquele que me fortalece.", ref: "Filipenses 4:13" },
+        { texto: "O Senhor é o meu pastor, nada me faltará.", ref: "Salmos 23:1" },
+        { texto: "Mil cairão ao teu lado, e dez mil à tua direita, mas tu não serás atingido.", ref: "Salmos 91:7" }
+    ];
+    const d = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const v = versiculos[d % versiculos.length];
+    document.getElementById('textoVersiculo').innerText = `"${v.texto}"`;
+    document.getElementById('refVersiculo').innerText = v.ref;
+}
+
+function renderizarEscalaCards(id, dados) {
+    const c = document.getElementById(id); c.innerHTML = "";
+    if(!dados.length) { c.innerHTML = "<p class='text-center'>Sem agenda.</p>"; return; }
+    dados.forEach(e => {
+        let h = formatarHoraGoogle(e.hora);
+        c.innerHTML += `<div class="app-card">
+            <div class="card-data-badge">${parseDataSegura(e.data).toLocaleDateString('pt-BR')} às ${h}</div>
+            <h3 class="card-title">${e.evento}</h3>
+            <div class="card-details">
+                <p><b>D:</b> ${e.dirigentes}</p>
+                <p><b>P:</b> ${e.porteiros}</p>
+            </div>
+        </div>`;
+    });
+}
+
+function renderizarAvisos(id, d) {
+    const c = document.getElementById(id); c.innerHTML = d.length ? "" : "<p class='text-center'>Sem avisos.</p>";
+    d.forEach(a => {
+        c.innerHTML += `<div class="aviso-card"><h3>${a.titulo}</h3><p>${a.mensagem}</p></div>`;
+    });
+}
+
 function entrarMembro() {
     const n = document.getElementById('inputNome').value;
     const e = document.getElementById('inputEmail').value;
-    if(!n || !e) return alert("Preencha tudo.");
+    if(!n || !e) return showToast("Preencha tudo.");
     localStorage.setItem('ad_membro_nome', n);
     localStorage.setItem('ad_membro_email', e);
-    mostrarAreaMembro(n);
+    location.reload();
 }
 
-function mostrarAreaMembro(n) {
-    document.getElementById('loginSection').classList.add('hidden');
-    document.getElementById('memberArea').classList.remove('hidden');
-    document.getElementById('userNameDisplay').innerText = "Paz, " + n.split(' ')[0];
-    document.getElementById('userInfo').classList.remove('hidden');
+function verificarAcessoMembro() {
+    const n = localStorage.getItem('ad_membro_nome');
+    if(n) {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('memberArea').classList.remove('hidden');
+        document.getElementById('userNameDisplay').innerText = "Paz, " + n.split(' ')[0];
+        document.getElementById('userInfo').classList.remove('hidden');
+    }
 }
 
 function sairMembro() { localStorage.clear(); location.reload(); }
-
+function toggleAdminLogin() { document.getElementById('loginModal').classList.toggle('hidden'); }
 async function validarAdmin() {
     const p = document.getElementById('adminPassword').value;
     const res = await fetchData('login', { senha: p });
-    if(res.success) {
-        localStorage.setItem('churchAdminPass', p);
-        location.reload();
-    } else alert("Senha incorreta");
+    if(res.success) { localStorage.setItem('churchAdminPass', p); location.reload(); }
+    else showToast("Senha incorreta.");
 }
-
 function verificarSessaoAdmin() {
     if(localStorage.getItem('churchAdminPass')) {
         document.getElementById('adminPanel').classList.remove('hidden');
@@ -204,47 +208,35 @@ function verificarSessaoAdmin() {
         document.getElementById('memberArea').classList.add('hidden');
     }
 }
-
 function logoutAdmin() { localStorage.removeItem('churchAdminPass'); location.reload(); }
 
 let itensEscalaTemp = [];
 function adicionarItemEscala() {
-    const d = document.getElementById('dataEscala').value;
-    const ev = document.getElementById('eventoEscala').value;
-    if(!d || !ev) return showToast("Falta data ou evento");
     itensEscalaTemp.push({
-        data: d, hora: document.getElementById('horaEscala').value,
-        evento: ev, dirigentes: document.getElementById('dirigentesEscala').value,
+        data: document.getElementById('dataEscala').value,
+        hora: document.getElementById('horaEscala').value,
+        evento: document.getElementById('eventoEscala').value,
+        dirigentes: document.getElementById('dirigentesEscala').value,
         porteiros: document.getElementById('porteirosEscala').value
     });
     atualizarPreview();
-    document.getElementById('eventoEscala').value = '';
 }
 
 function atualizarPreview() {
     const ul = document.getElementById('listaPreview');
-    const btn = document.getElementById('btnPublicarTudo');
+    const box = document.getElementById('previewEscala');
     ul.innerHTML = "";
     if(itensEscalaTemp.length > 0) {
-        document.getElementById('previewEscala').style.display = 'block';
-        btn.disabled = false;
+        box.classList.remove('hidden');
         itensEscalaTemp.forEach((it, i) => {
-            ul.innerHTML += `<li>${it.data} - ${it.evento} <b onclick="itensEscalaTemp.splice(${i},1);atualizarPreview()" style="color:red;cursor:pointer">X</b></li>`;
+            ul.innerHTML += `<li>${it.evento} <span onclick="itensEscalaTemp.splice(${i},1);atualizarPreview()" style="color:red">X</span></li>`;
         });
-    } else {
-        document.getElementById('previewEscala').style.display = 'none';
-        btn.disabled = true;
-    }
+    } else box.classList.add('hidden');
 }
 
 async function submitEscalaSemana() {
-    showToast("Publicando...");
-    const res = await fetchData('salvarEscalaLote', {
-        senha: localStorage.getItem('churchAdminPass'),
-        itens: itensEscalaTemp
-    });
-    if(res.success) { itensEscalaTemp = []; atualizarPreview(); carregarDados(); }
-    showToast(res.msg);
+    const res = await fetchData('salvarEscalaLote', { senha: localStorage.getItem('churchAdminPass'), itens: itensEscalaTemp });
+    if(res.success) { itensEscalaTemp = []; atualizarPreview(); carregarDados(); showToast("Publicado!"); }
 }
 
 async function submitAviso() {
@@ -253,12 +245,11 @@ async function submitAviso() {
         titulo: document.getElementById('tituloAviso').value,
         mensagem: document.getElementById('msgAviso').value
     });
-    if(res.success) { document.getElementById('tituloAviso').value=''; document.getElementById('msgAviso').value=''; carregarDados(); }
-    showToast(res.msg);
+    if(res.success) { document.getElementById('tituloAviso').value=''; document.getElementById('msgAviso').value=''; carregarDados(); showToast("Enviado!"); }
 }
 
 function parseDataSegura(s) {
-    if(!s) return null;
+    if(!s) return new Date();
     let d = new Date(s);
     if(isNaN(d.getTime())) {
         const p = s.split('-');
@@ -286,24 +277,11 @@ function filtrarSemanaAtual(l) {
     });
 }
 
-function renderizarAvisos(id, d) {
-    const c = document.getElementById(id);
-    if(!c) return;
-    c.innerHTML = d.length ? "" : "<p>Sem avisos.</p>";
-    d.forEach(a => {
-        c.innerHTML += `<div class="aviso-item"><b>${a.titulo}</b><p>${a.mensagem}</p></div>`;
-    });
-}
-
 function showToast(m) {
     const t = document.getElementById('toast');
     t.innerText = m; t.classList.remove('hidden');
     setTimeout(() => t.classList.add('hidden'), 3000);
 }
-
-function abrirModalPix() { document.getElementById('modalPix').style.display='flex'; }
-function fecharModalPix() { document.getElementById('modalPix').style.display='none'; }
-function copiarPix() {
-    navigator.clipboard.writeText(document.getElementById('chavePixTexto').innerText);
-    showToast("Pix Copiado!");
-}
+function fecharModalPix() { document.getElementById('modalPix').classList.add('hidden'); }
+function abrirModalPix() { document.getElementById('modalPix').classList.remove('hidden'); }
+function copiarPix() { navigator.clipboard.writeText(document.getElementById('chavePixTexto').innerText); showToast("Copiado!"); }
