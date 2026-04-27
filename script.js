@@ -62,7 +62,7 @@ function iniciarDitadoIA() {
 }
 
 async function fetchData(action, params = {}) {
-    if (['getEscalas', 'getAvisos'].includes(action)) {
+    if (['getEscalas', 'getAvisos', 'getAniversariantesDia'].includes(action)) {
         try {
             const r = await fetch(`${API_URL}?action=${action}`);
             return await r.json();
@@ -77,6 +77,7 @@ async function fetchData(action, params = {}) {
 }
 
 async function carregarDados() {
+    // Carrega Escalas e Avisos
     const avisos = await fetchData('getAvisos');
     renderizarAvisos('avisosContainer', avisos);
     const escalas = await fetchData('getEscalas');
@@ -84,6 +85,44 @@ async function carregarDados() {
     filtradas.sort((a, b) => parseDataSegura(a.data) - parseDataSegura(b.data));
     renderizarEscalaCards('tabelaEscalasBody', filtradas);
     renderizarEscalaAdmin('tabelaEscalasAdminBody', filtradas);
+    
+    // Carrega Aniversariantes do Dia
+    const aniversariantes = await fetchData('getAniversariantesDia');
+    renderizarAniversariantes(aniversariantes);
+}
+
+function renderizarAniversariantes(lista) {
+    const box = document.getElementById('boxAniversariantes');
+    const container = document.getElementById('listaAniversariantes');
+    
+    if(!lista || lista.length === 0) {
+        box.style.display = 'none';
+        return;
+    }
+    
+    box.style.display = 'block';
+    container.innerHTML = '';
+    
+    // Verifica se o usuário logado é o Pastor (Admin)
+    const isAdmin = localStorage.getItem('churchAdminPass') !== null;
+    
+    lista.forEach(p => {
+        let btnZap = '';
+        if(isAdmin && p.telefone) {
+            let msgText = encodeURIComponent(`A Paz do Senhor, ${p.nome}! A liderança da AD Luís Gomes deseja um Feliz Aniversário! Que Deus te abençoe grandemente.`);
+            btnZap = `<a href="https://wa.me/55${p.telefone}?text=${msgText}" target="_blank" class="btn-tiny" style="background:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:5px; color:white;"><span class="material-icons-round" style="font-size:16px">chat</span> Enviar Zap</a>`;
+        }
+        
+        container.innerHTML += `
+            <div class="app-card" style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong style="font-size:1.1rem; color:var(--text-main);">${p.nome}</strong>
+                    <p class="text-sm text-muted">Ficando mais experiente hoje! 🎉</p>
+                </div>
+                ${btnZap}
+            </div>
+        `;
+    });
 }
 
 function renderizarEscalaAdmin(id, dados) {
@@ -112,7 +151,6 @@ async function confirmarExcluir(linha) {
     }
 }
 
-// --- RESTO DAS FUNÇÕES DE APOIO ---
 function abrirModalEdit(id, data, hora, evento, dirigentes, porteiros) {
     document.getElementById('edit-id').value = id;
     document.getElementById('edit-data').value = data.includes('/') ? data.split('/').reverse().join('-') : data.substring(0,10);
@@ -122,7 +160,6 @@ function abrirModalEdit(id, data, hora, evento, dirigentes, porteiros) {
     document.getElementById('edit-porteiros').value = porteiros;
     document.getElementById('modalEditEscala').classList.remove('hidden');
 }
-
 function fecharModalEdit() { document.getElementById('modalEditEscala').classList.add('hidden'); }
 
 async function salvarEdicaoEscala(event) {
