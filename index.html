@@ -134,8 +134,15 @@
                         <div class="dept-info"><h3>Infantil</h3><p><span class="text-muted">Dirigente:</span> Tia [Nome]</p></div>
                     </div>
                 </div>
-            </div>
+                <div style="text-align: center; margin-top: 40px; margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+                    <p class="text-sm text-muted">Desenvolvido por <strong>WillWeb Soluções Tecnológicas</strong></p>
+                    <button onclick="abrirModalPix()" style="background: none; border: none; color: var(--primary); font-size: 0.85rem; text-decoration: underline; margin-top: 8px; cursor: pointer; padding: 5px;">
+                        Deseja abençoar este projeto? Clique aqui.
+                    </button>
+                </div>
+            </div> 
         </section>
+            
 
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('tabAgenda', this)">
@@ -226,11 +233,17 @@
     <div id="modalPix" class="modal hidden">
         <div class="modal-surface text-center">
             <span class="close-modal" onclick="fecharModalPix()">&times;</span>
-            <div class="pix-key-box" id="chavePixTexto">3fe7ebb6-a140-4459-9800-0f7ed58da665</div>
-            <button onclick="copiarPix()" class="btn-accent w-100">Copiar Pix</button>
+            <span class="material-icons-round" style="font-size: 40px; color: #ffab40;">volunteer_activism</span>
+            <h3 style="margin-top: 10px;">Apoie o Desenvolvedor</h3>
+            
+            <p class="text-sm text-muted" style="margin: 15px 0; line-height: 1.5;">
+                A criação deste aplicativo foi uma doação da <strong>WillWeb Soluções Tecnológicas</strong>. A igreja arca apenas com os custos fixos de servidor e manutenção. Se esta ferramenta tem sido uma bênção e você deseja apoiar o desenvolvedor diretamente com uma contribuição pessoal e espontânea, sinta-se à vontade!
+            </p>
+
+            <div class="pix-key-box" id="chavePixTexto" style="font-size: 0.9rem; word-break: break-all;">3fe7ebb6-a140-4459-9800-0f7ed58da665</div>
+            <button onclick="copiarPix()" class="btn-accent w-100 mt-2">Copiar Chave Pix</button>
         </div>
     </div>
-    <button class="fab-donate" onclick="abrirModalPix()"><span class="material-icons-round">favorite</span></button>
     <div id="toast" class="toast hidden"></div>
     <script src="script.js"></script>
 </body>
