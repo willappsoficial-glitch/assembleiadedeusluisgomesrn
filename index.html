@@ -4,12 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AD Luís Gomes - App</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AD LG">
+    <link rel="apple-touch-icon" href="logo.jpg">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4b0082">
 </head>
 <body>
+    <div id="installBanner" class="install-banner hidden">
+        <div class="install-banner-content">
+            <img src="logo.jpg" alt="Logo" class="install-logo">
+            <div class="install-text">
+                <strong>App AD Luís Gomes</strong>
+                <p id="installMessage">Adicione à tela inicial para acesso mais rápido!</p>
+            </div>
+        </div>
+        <button id="installBtn" class="btn-accent btn-sm" onclick="instalarApp()">Instalar</button>
+        <button id="closeInstallBtn" class="icon-btn" onclick="fecharBannerInstalacao()"><span class="material-icons-round">close</span></button>
+    </div>
 
     <header class="topbar">
         <div class="logo-area">
