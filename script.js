@@ -322,3 +322,65 @@ function showToast(m) {
 function fecharModalPix() { document.getElementById('modalPix').classList.add('hidden'); }
 function abrirModalPix() { document.getElementById('modalPix').classList.remove('hidden'); }
 function copiarPix() { navigator.clipboard.writeText(document.getElementById('chavePixTexto').innerText); showToast("Copiado!"); }
+
+// ========================================================
+// PWA & INSTALAÇÃO (ANDROID E IOS)
+// ========================================================
+let deferredPrompt;
+
+// 1. Registra o Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW Registrado!'))
+            .catch(err => console.error('Erro no SW:', err));
+    });
+}
+
+// 2. Lógica para capturar o botão de instalar no Android
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.getElementById('installBanner');
+    // Só mostra o banner se o usuário não tiver fechado antes
+    if (!localStorage.getItem('pwa_dismissed') && banner) {
+        banner.classList.remove('hidden');
+    }
+});
+
+// Ação de clicar no botão "Instalar" do Android
+function instalarApp() {
+    const banner = document.getElementById('installBanner');
+    if (deferredPrompt) {
+        banner.classList.add('hidden');
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('App instalado com sucesso!');
+            }
+            deferredPrompt = null;
+        });
+    }
+}
+
+// Fecha o banner se a pessoa não quiser instalar
+function fecharBannerInstalacao() {
+    document.getElementById('installBanner').classList.add('hidden');
+    localStorage.setItem('pwa_dismissed', 'true');
+}
+
+// 3. Detecção de iPhone/iPad e aviso personalizado
+document.addEventListener("DOMContentLoaded", () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone === true; // Verifica se JÁ ESTÁ instalado
+    const banner = document.getElementById('installBanner');
+    const installBtn = document.getElementById('installBtn');
+    const installMsg = document.getElementById('installMessage');
+
+    // Se for iPhone e ainda não estiver instalado
+    if (isIOS && !isStandalone && !localStorage.getItem('pwa_dismissed') && banner) {
+        installMsg.innerHTML = "Para instalar no iPhone: toque em <b>Compartilhar</b> <span class='material-icons-round' style='font-size:12px; vertical-align:middle;'>ios_share</span> e depois <b>'Adicionar à Tela de Início'</b>.";
+        installBtn.style.display = 'none'; // Esconde o botão, porque iOS não permite forçar
+        banner.classList.remove('hidden');
+    }
+});
