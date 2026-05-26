@@ -57,6 +57,12 @@
                 <input type="email" id="inputEmail" placeholder="Seu E-mail">
             </div>
             <button type="button" onclick="entrarMembro()" class="btn-primary w-100">Acessar Sistema</button>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="toggleAdminLogin()" style="background: none; border: none; color: var(--text-muted); font-size: 0.85rem; text-decoration: underline; cursor: pointer; padding: 5px;">
+                    Acesso restrito à Liderança
+                </button>
+            </div>
         </div>
     </section>
 
@@ -168,9 +174,6 @@
             </button>
             <button class="nav-item" onclick="switchTab('tabIgreja', this)">
                 <span class="material-icons-round">account_balance</span><span>A Igreja</span>
-            </button>
-            <button class="nav-item" onclick="toggleAdminLogin()">
-                <span class="material-icons-round">admin_panel_settings</span><span>Painel</span>
             </button>
         </nav>
     </main>
