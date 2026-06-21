@@ -70,8 +70,11 @@
         
         <section id="tabAgenda" class="tab-content active">
             <div class="container">
-                <div class="section-header">
-                    <h2><span class="material-icons-round text-primary">calendar_month</span> Agenda da Semana</h2>
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="display: flex; align-items: center; gap: 8px;"><span class="material-icons-round text-primary">calendar_month</span> Agenda da Semana</h2>
+                    <button onclick="compartilharAgendaSemana()" class="icon-btn" style="color: var(--primary); background: var(--bg-base);" title="Compartilhar Agenda">
+                        <span class="material-icons-round">share</span>
+                    </button>
                 </div>
                 
                 <div class="versiculo-card">
@@ -84,7 +87,10 @@
                 </div>
 
                 <div class="cards-list" id="tabelaEscalasBody">
-                    <div class="loading">Carregando agenda...</div>
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Buscando avisos...</p>
+                    </div>
                 </div>
             </div>
         </section>
