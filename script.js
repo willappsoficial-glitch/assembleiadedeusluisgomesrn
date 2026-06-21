@@ -32,6 +32,19 @@ function switchTab(tabId, btnElement) {
     document.getElementById(tabId).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
+
+    // --- LÓGICA DE LIMPAR A BOLINHA E ROLAR PARA O DIA ---
+    if(tabId === 'tabAgenda') {
+        document.getElementById('badgeAgenda').classList.add('hidden');
+        localStorage.setItem('ad_notify_agenda', strDadosAgenda);
+        
+        // Rola para o dia atual suavemente quando a pessoa clica no botão da Agenda
+        setTimeout(rolarParaHoje, 100);
+    }
+    if(tabId === 'tabMural') {
+        document.getElementById('badgeMural').classList.add('hidden');
+        localStorage.setItem('ad_notify_mural', strDadosMural);
+    }
 }
 
 function iniciarDitadoIA() {
@@ -80,15 +93,34 @@ async function carregarDados() {
     // Carrega Escalas e Avisos
     const avisos = await fetchData('getAvisos');
     renderizarAvisos('avisosContainer', avisos);
+    strDadosMural = JSON.stringify(avisos); 
+    
     const escalas = await fetchData('getEscalas');
     let filtradas = filtrarSemanaAtual(escalas);
-    filtradas.sort((a, b) => parseDataSegura(a.data) - parseDataSegura(b.data));
+    
+    // --- NOVA ORDENAÇÃO POR DATA E HORA ---
+    filtradas.sort((a, b) => {
+        let dataA = parseDataSegura(a.data);
+        let [hA, mA] = (formatarHoraGoogle(a.hora) || "00:00").split(':').map(Number);
+        dataA.setHours(hA, mA, 0);
+
+        let dataB = parseDataSegura(b.data);
+        let [hB, mB] = (formatarHoraGoogle(b.hora) || "00:00").split(':').map(Number);
+        dataB.setHours(hB, mB, 0);
+
+        return dataA.getTime() - dataB.getTime();
+    });
+
     renderizarEscalaCards('tabelaEscalasBody', filtradas);
     renderizarEscalaAdmin('tabelaEscalasAdminBody', filtradas);
+    strDadosAgenda = JSON.stringify(filtradas); 
     
     // Carrega Aniversariantes do Dia
     const aniversariantes = await fetchData('getAniversariantesDia');
     renderizarAniversariantes(aniversariantes);
+
+    // --- LÓGICA DA BOLINHA DE NOTIFICAÇÃO ---
+    verificarNotificacoes();
 }
 
 function renderizarAniversariantes(lista) {
@@ -188,27 +220,63 @@ function carregarVersiculo() {
     document.getElementById('refVersiculo').innerText = v.ref;
 }
 
-function renderizarEscalaCards(id, dados) {
-    const c = document.getElementById(id); c.innerHTML = "";
-    if(!dados.length) { c.innerHTML = "<p class='text-center'>Sem agenda.</p>"; return; }
-    dados.forEach(e => {
-        let h = formatarHoraGoogle(e.hora);
-        c.innerHTML += `<div class="app-card">
-            <div class="card-data-badge">${parseDataSegura(e.data).toLocaleDateString('pt-BR')} às ${h}</div>
-            <h3 class="card-title">${e.evento}</h3>
-            <div class="card-details">
-                <p><b>D:</b> ${e.dirigentes}</p>
-                <p><b>P:</b> ${e.porteiros}</p>
+
+
+function renderizarAvisos(id, d) {
+    const c = document.getElementById(id); c.innerHTML = d.length ? "" : "<p class='text-center'>Sem avisos.</p>";
+    d.forEach((a, i) => {
+        c.innerHTML += `<div class="aviso-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h3>${a.titulo}</h3>
+                <button onclick="compartilharAviso(${i})" class="icon-btn" style="color: var(--primary); margin-top: -5px; padding: 4px;" title="Compartilhar Aviso">
+                    <span class="material-icons-round">share</span>
+                </button>
             </div>
+            <p>${a.mensagem}</p>
         </div>`;
     });
 }
 
-function renderizarAvisos(id, d) {
-    const c = document.getElementById(id); c.innerHTML = d.length ? "" : "<p class='text-center'>Sem avisos.</p>";
-    d.forEach(a => {
-        c.innerHTML += `<div class="aviso-card"><h3>${a.titulo}</h3><p>${a.mensagem}</p></div>`;
+// ========================================================
+// SISTEMA NATIVO DE COMPARTILHAMENTO (WHATSAPP/OUTROS)
+// ========================================================
+
+async function compartilharTexto(titulo, texto) {
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: titulo, text: texto });
+        } catch (err) { console.log('O usuário fechou a aba de compartilhar.'); }
+    } else {
+        // Fallback: Se for num PC velho que não tem o botão compartilhar do celular
+        navigator.clipboard.writeText(titulo + "\n\n" + texto);
+        showToast("Texto copiado para a área de transferência!");
+    }
+}
+
+function compartilharAviso(index) {
+    let avisos = JSON.parse(strDadosMural); // Pega os avisos salvos em cache
+    let avisoClicado = avisos[index];
+    
+    let textoFormatado = `📢 *${avisoClicado.titulo}*\n\n${avisoClicado.mensagem}\n\n_Enviado via App AD Luís Gomes_`;
+    compartilharTexto(avisoClicado.titulo, textoFormatado);
+}
+
+function compartilharAgendaSemana() {
+    if(!strDadosAgenda || strDadosAgenda === "[]") return showToast("Aguarde a agenda carregar.");
+    
+    let dados = JSON.parse(strDadosAgenda);
+    let texto = "🗓️ *AGENDA DA SEMANA - AD Luís Gomes*\n\n";
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    dados.forEach(e => {
+        let objData = parseDataSegura(e.data);
+        let nomeDia = diasSemana[objData.getDay()];
+        let h = formatarHoraGoogle(e.hora);
+        texto += `🔹 *${nomeDia}, ${objData.toLocaleDateString('pt-BR')} às ${h}*\n${e.evento}\nDirigentes: ${e.dirigentes}\n\n`;
     });
+    
+    texto += "Acesse nosso App para mais detalhes e programação completa!";
+    compartilharTexto("Agenda da Semana", texto);
 }
 
 function entrarMembro() {
@@ -304,15 +372,6 @@ function formatarHoraGoogle(h) {
     return `${Math.floor(tot/60).toString().padStart(2,'0')}:${(tot%60).toString().padStart(2,'0')}`;
 }
 
-function filtrarSemanaAtual(l) {
-    const h = new Date(); h.setHours(0,0,0,0);
-    const dom = new Date(h); dom.setDate(h.getDate() - h.getDay());
-    const sab = new Date(dom); sab.setDate(dom.getDate() + 6); sab.setHours(23,59,59);
-    return l.filter(i => {
-        const di = parseDataSegura(i.data);
-        return di >= dom && di <= sab;
-    });
-}
 
 function showToast(m) {
     const t = document.getElementById('toast');
@@ -384,3 +443,109 @@ document.addEventListener("DOMContentLoaded", () => {
         banner.classList.remove('hidden');
     }
 });
+
+function renderizarEscalaCards(id, dados) {
+    const c = document.getElementById(id); c.innerHTML = "";
+    if(!dados.length) { c.innerHTML = "<p class='text-center'>Sem agenda.</p>"; return; }
+    
+    const agora = new Date(); 
+    const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+    const diasAgrupados = {};
+
+    dados.forEach(e => {
+        let objData = parseDataSegura(e.data);
+        let nomeDia = diasSemana[objData.getDay()];
+        let dataString = `${nomeDia}, ${objData.toLocaleDateString('pt-BR')}`;
+        
+        if (!diasAgrupados[dataString]) {
+            diasAgrupados[dataString] = []; 
+        }
+        diasAgrupados[dataString].push(e); 
+    });
+
+    for (const [dataChave, eventosDoDia] of Object.entries(diasAgrupados)) {
+        
+        let htmlEventos = "";
+        let temEventoHoje = false; // Variável para descobrir se esse é o card de hoje
+
+        eventosDoDia.forEach(e => {
+            let h = formatarHoraGoogle(e.hora);
+            let objData = parseDataSegura(e.data);
+            
+            let [horas, minutos] = (h || "00:00").split(':').map(Number);
+            let dataHoraEvento = new Date(objData.getFullYear(), objData.getMonth(), objData.getDate(), horas, minutos, 0);
+            let dataHoraFim = new Date(dataHoraEvento.getTime() + (90 * 60000)); 
+            
+            let classeExtra = "";
+            
+            if (dataHoraFim.getTime() < agora.getTime()) {
+                classeExtra = "passado"; 
+            } else if (objData.getFullYear() === agora.getFullYear() && 
+                       objData.getMonth() === agora.getMonth() && 
+                       objData.getDate() === agora.getDate()) {
+                classeExtra = "hoje"; 
+                temEventoHoje = true; // Opa, achamos um evento de hoje!
+            }
+
+            htmlEventos += `
+            <div class="evento-item ${classeExtra}">
+                <div class="evento-hora">${h}</div>
+                <div class="evento-info">
+                    <h4 class="evento-titulo">${e.evento}</h4>
+                    <p class="evento-equipe"><b>D:</b> ${e.dirigentes}</p>
+                    <p class="evento-equipe"><b>P:</b> ${e.porteiros}</p>
+                </div>
+            </div>`;
+        });
+
+        // Se tem evento hoje, coloca o id="card-hoje" na div principal
+        let idAttr = temEventoHoje ? 'id="card-hoje"' : '';
+
+        c.innerHTML += `
+        <div class="app-card dia-card" ${idAttr}>
+            <div class="dia-header">
+                <span class="material-icons-round">event</span> ${dataChave}
+            </div>
+            <div class="dia-body">
+                ${htmlEventos}
+            </div>
+        </div>`;
+    }
+
+    // Manda rolar para hoje assim que terminar de desenhar a tela
+    setTimeout(rolarParaHoje, 500);
+}
+
+// NOVA FUNÇÃO: Rola a tela suavemente para o card de hoje
+function rolarParaHoje() {
+    const tabAgenda = document.getElementById('tabAgenda');
+    const cardHoje = document.getElementById('card-hoje');
+    
+    // Só faz a rolagem se a pessoa estiver na aba da Agenda e o card de hoje existir
+    if (tabAgenda.classList.contains('active') && cardHoje) {
+        cardHoje.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function filtrarSemanaAtual(l) {
+    const h = new Date(); 
+    h.setHours(0, 0, 0, 0);
+    
+    let diaSemana = h.getDay(); // Retorna de 0 (Dom) a 6 (Sáb)
+    
+    // Truque matemático: Se for domingo (0), volta 6 dias para achar a segunda. Se não, volta '1 - diaSemana'
+    let diffParaSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
+    
+    const seg = new Date(h); 
+    seg.setDate(h.getDate() + diffParaSegunda); // Crava na Segunda-feira
+    
+    const dom = new Date(seg); 
+    dom.setDate(seg.getDate() + 6); // Soma 6 dias para cravar no Domingo
+    dom.setHours(23, 59, 59, 999);
+    
+    return l.filter(i => {
+        const di = parseDataSegura(i.data);
+        return di >= seg && di <= dom;
+    });
+}
