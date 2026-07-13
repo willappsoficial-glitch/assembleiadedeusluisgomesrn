@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ad-luis-gomes-v1';
+const CACHE_NAME = 'ad-luis-gomes-v2';
 const urlsToCache = [
   './',
   './index.html',
