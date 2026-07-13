@@ -279,15 +279,28 @@ function compartilharAgendaSemana() {
     compartilharTexto("Agenda da Semana", texto);
 }
 
-function entrarMembro() {
+async function entrarMembro() {
     const n = document.getElementById('inputNome').value;
     const e = document.getElementById('inputEmail').value;
+    
     if(!n || !e) return showToast("Preencha tudo.");
-    localStorage.setItem('ad_membro_nome', n);
-    localStorage.setItem('ad_membro_email', e);
-    location.reload();
+    
+    showToast("Verificando acesso...");
+    
+    // Faz a chamada POST para o Google Apps Script
+    const res = await fetchData('cadastrarMembro', { nome: n, email: e });
+    
+    // Se o cadastro foi um sucesso OU se o e-mail já existe na planilha (login normal)
+    if (res && (res.success || (res.erro && res.msg === "E-mail já cadastrado."))) {
+        localStorage.setItem('ad_membro_nome', n);
+        localStorage.setItem('ad_membro_email', e);
+        location.reload();
+    } else {
+        // Se der algum erro de conexão ou de código no backend
+        showToast("Erro ao tentar salvar os dados.");
+        console.error(res);
+    }
 }
-
 function verificarAcessoMembro() {
     const n = localStorage.getItem('ad_membro_nome');
     if(n) {
