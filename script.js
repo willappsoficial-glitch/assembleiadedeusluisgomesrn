@@ -301,16 +301,29 @@ async function entrarMembro() {
         console.error(res);
     }
 }
-function verificarAcessoMembro() {
+async function verificarAcessoMembro() {
     const n = localStorage.getItem('ad_membro_nome');
+    const e = localStorage.getItem('ad_membro_email');
+    
     if(n) {
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('memberArea').classList.remove('hidden');
         document.getElementById('userNameDisplay').innerText = "Paz, " + n.split(' ')[0];
         document.getElementById('userInfo').classList.remove('hidden');
+
+        // --- INÍCIO DA SINCRONIZAÇÃO SILENCIOSA ---
+        // Se o e-mail existe localmente, mas a flag de sincronização não, tenta enviar para a planilha
+        if (e && !localStorage.getItem('ad_membro_sincronizado')) {
+            const res = await fetchData('cadastrarMembro', { nome: n, email: e });
+            
+            // Se o cadastro deu certo OU se o backend avisou que já existe, marcamos como sincronizado
+            if (res && (res.success || (res.erro && res.msg === "E-mail já cadastrado."))) {
+                localStorage.setItem('ad_membro_sincronizado', 'true');
+            }
+        }
+        // --- FIM DA SINCRONIZAÇÃO SILENCIOSA ---
     }
 }
-
 function sairMembro() { localStorage.clear(); location.reload(); }
 function toggleAdminLogin() { document.getElementById('loginModal').classList.toggle('hidden'); }
 async function validarAdmin() {
