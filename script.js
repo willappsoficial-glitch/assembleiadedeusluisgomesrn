@@ -354,15 +354,54 @@ function adicionarItemEscala() {
 }
 
 function atualizarPreview() {
-    const ul = document.getElementById('listaPreview');
+    const lista = document.getElementById('listaPreview');
     const box = document.getElementById('previewEscala');
-    ul.innerHTML = "";
+    
+    // Removemos as bolinhas da lista original e o recuo
+    lista.style.listStyle = "none";
+    lista.style.padding = "0";
+    lista.innerHTML = "";
+
     if(itensEscalaTemp.length > 0) {
         box.classList.remove('hidden');
+        
         itensEscalaTemp.forEach((it, i) => {
-            ul.innerHTML += `<li>${it.evento} <span onclick="itensEscalaTemp.splice(${i},1);atualizarPreview()" style="color:red">X</span></li>`;
+            // Cria um card editável para cada evento na memória
+            lista.innerHTML += `
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    
+                    <button onclick="removerItemPreview(${i})" class="icon-btn" style="position: absolute; top: 8px; right: 8px; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 4px;" title="Remover este evento">
+                        <span class="material-icons-round" style="font-size: 18px;">delete</span>
+                    </button>
+
+                    <h4 style="font-size: 0.9rem; color: var(--primary); margin-bottom: 8px; margin-right: 30px;">
+                        Evento ${i + 1}
+                    </h4>
+
+                    <div class="form-grid" style="margin-bottom: 6px;">
+                        <input type="date" value="${it.data}" onchange="atualizarItemTemp(${i}, 'data', this.value)" class="input-modern" style="padding: 8px; margin: 0;">
+                        <input type="time" value="${it.hora}" onchange="atualizarItemTemp(${i}, 'hora', this.value)" class="input-modern" style="padding: 8px; margin: 0;">
+                    </div>
+                    <input type="text" value="${it.evento}" placeholder="Evento" onchange="atualizarItemTemp(${i}, 'evento', this.value)" class="input-modern" style="padding: 8px; margin-bottom: 6px;">
+                    <input type="text" value="${it.dirigentes}" placeholder="Dirigentes" onchange="atualizarItemTemp(${i}, 'dirigentes', this.value)" class="input-modern" style="padding: 8px; margin-bottom: 6px;">
+                    <input type="text" value="${it.porteiros}" placeholder="Porteiros" onchange="atualizarItemTemp(${i}, 'porteiros', this.value)" class="input-modern" style="padding: 8px; margin-bottom: 0;">
+                </div>
+            `;
         });
-    } else box.classList.add('hidden');
+    } else {
+        box.classList.add('hidden');
+    }
+}
+
+// Atualiza a variável na memória assim que o usuário digita algo nos cards de prévia
+function atualizarItemTemp(index, campo, valor) {
+    itensEscalaTemp[index][campo] = valor;
+}
+
+// Remove o item da memória e atualiza a tela
+function removerItemPreview(index) {
+    itensEscalaTemp.splice(index, 1);
+    atualizarPreview();
 }
 
 async function submitEscalaSemana() {
@@ -574,4 +613,50 @@ function filtrarSemanaAtual(l) {
         const di = parseDataSegura(i.data);
         return di >= seg && di <= dom;
     });
+}
+
+function repetirEscalaAnterior() {
+    // Verifica se já existe uma agenda carregada no app
+    if (!strDadosAgenda || strDadosAgenda === "[]") {
+        return showToast("Aguarde a agenda carregar ou verifique se há eventos.");
+    }
+
+    const escalaAnterior = JSON.parse(strDadosAgenda);
+    
+    // Limpa a lista temporária atual para não duplicar com coisas que o pastor já tenha digitado
+    itensEscalaTemp = [];
+
+    escalaAnterior.forEach(item => {
+        // Pega a data original usando sua função segura
+        let dataAntiga = parseDataSegura(item.data);
+        
+        // Magia do frontend: soma 7 dias exatos na data
+        dataAntiga.setDate(dataAntiga.getDate() + 7);
+
+        // Formata de volta para o padrão YYYY-MM-DD que o banco e o HTML esperam
+        let ano = dataAntiga.getFullYear();
+        let mes = String(dataAntiga.getMonth() + 1).padStart(2, '0');
+        let dia = String(dataAntiga.getDate()).padStart(2, '0');
+        let novaDataString = `${ano}-${mes}-${dia}`;
+
+        // Trata a hora para não dar erro de fuso horário
+        let horaFormatada = formatarHoraGoogle(item.hora) || item.hora;
+
+        // Joga pro array temporário que alimenta o Preview
+        itensEscalaTemp.push({
+            data: novaDataString,
+            hora: horaFormatada,
+            evento: item.evento,
+            dirigentes: item.dirigentes,
+            porteiros: item.porteiros
+        });
+    });
+
+    // Atualiza a caixinha verde de preview na tela
+    atualizarPreview();
+    
+    // Rola a tela um pouco para baixo para o usuário ver que a lista encheu
+    document.getElementById('previewEscala').scrollIntoView({ behavior: 'smooth' });
+    
+    showToast("Escala copiada! Você pode apagar eventos indesejados no 'X' antes de publicar.");
 }
