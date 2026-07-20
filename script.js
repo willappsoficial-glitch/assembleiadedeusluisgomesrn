@@ -79,13 +79,27 @@ async function fetchData(action, params = {}) {
         try {
             const r = await fetch(`${API_URL}?action=${action}`);
             return await r.json();
-        } catch (e) { return []; }
+        } catch (e) { 
+            console.error(`Erro GET ${action}:`, e);
+            return []; 
+        }
     } else {
         const p = { action: action, ...params };
         try {
             const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
-            return await r.json();
-        } catch (e) { return { erro: true }; }
+            // Se o Google Apps Script quebrar, ele frequentemente retorna uma página HTML de erro.
+            // O código abaixo captura o texto bruto antes de tentar converter para JSON.
+            const textoResposta = await r.text();
+            try {
+                return JSON.parse(textoResposta);
+            } catch (jsonErr) {
+                console.error("O Apps Script retornou um erro interno (HTML) em vez de JSON:", textoResposta);
+                return { erro: true, msg: "Falha interna no backend. Veja o console." };
+            }
+        } catch (e) { 
+            console.error(`Erro na requisição POST ${action}:`, e);
+            return { erro: true, msg: e.message }; 
+        }
     }
 }
 
@@ -405,8 +419,32 @@ function removerItemPreview(index) {
 }
 
 async function submitEscalaSemana() {
-    const res = await fetchData('salvarEscalaLote', { senha: localStorage.getItem('churchAdminPass'), itens: itensEscalaTemp });
-    if(res.success) { itensEscalaTemp = []; atualizarPreview(); carregarDados(); showToast("Publicado!"); }
+    const btn = document.getElementById('btnPublicarTudo');
+    btn.innerText = "Publicando...";
+    btn.disabled = true;
+
+    console.log("Enviando os seguintes dados para o Apps Script:", itensEscalaTemp);
+
+    const res = await fetchData('salvarEscalaLote', { 
+        senha: localStorage.getItem('churchAdminPass'), 
+        itens: itensEscalaTemp 
+    });
+
+    console.log("Resposta bruta recebida do servidor:", res);
+
+    if(res && res.success) { 
+        itensEscalaTemp = []; 
+        atualizarPreview(); 
+        carregarDados(); 
+        showToast("Publicado!"); 
+    } else {
+        // Agora a falha não será mais silenciosa
+        alert("O clique foi registrado, mas houve um erro ao processar. Abra o console (F12) para depurar o retorno do servidor.");
+        showToast("Erro na publicação.");
+    }
+
+    btn.innerText = "Publicar Tudo";
+    btn.disabled = false;
 }
 
 async function submitAviso() {
