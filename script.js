@@ -133,8 +133,11 @@ async function carregarDados() {
     const aniversariantes = await fetchData('getAniversariantesDia');
     renderizarAniversariantes(aniversariantes);
 
-    // --- LÓGICA DA BOLINHA DE NOTIFICAÇÃO ---
-    verificarNotificacoes();
+    // --- LÓGICA DA BOLINHA DE NOTIFICAÇÃO (CORRIGIDA) ---
+    // Verifica se a função existe antes de tentar executá-la
+    if (typeof verificarNotificacoes === 'function') {
+        verificarNotificacoes();
+    }
 }
 
 function renderizarAniversariantes(lista) {
