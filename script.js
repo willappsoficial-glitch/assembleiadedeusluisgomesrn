@@ -77,7 +77,12 @@ function iniciarDitadoIA() {
 async function fetchData(action, params = {}) {
     if (['getEscalas', 'getAvisos', 'getAniversariantesDia'].includes(action)) {
         try {
-            const r = await fetch(`${API_URL}?action=${action}`);
+            // --- INÍCIO DO SISTEMA ANTICACHE ---
+            // Cria um timestamp único para forçar o navegador a buscar dados atualizados na hora
+            const antiCache = '&t=' + new Date().getTime();
+            const r = await fetch(`${API_URL}?action=${action}${antiCache}`, { cache: 'no-store' });
+            // --- FIM DO SISTEMA ANTICACHE ---
+            
             return await r.json();
         } catch (e) { 
             console.error(`Erro GET ${action}:`, e);
@@ -638,21 +643,17 @@ function filtrarSemanaAtual(l) {
     const h = new Date(); 
     h.setHours(0, 0, 0, 0);
     
-    let diaSemana = h.getDay(); // Retorna de 0 (Dom) a 6 (Sáb)
-    
-    // Truque matemático: Se for domingo (0), volta 6 dias para achar a segunda. Se não, volta '1 - diaSemana'
+    let diaSemana = h.getDay(); 
     let diffParaSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
     
     const seg = new Date(h); 
     seg.setDate(h.getDate() + diffParaSegunda); // Crava na Segunda-feira
     
-    const dom = new Date(seg); 
-    dom.setDate(seg.getDate() + 6); // Soma 6 dias para cravar no Domingo
-    dom.setHours(23, 59, 59, 999);
-    
+    // Removemos a regra que limitava ao Domingo (&& di <= dom).
+    // Agora, ele mostra os eventos da semana e qualquer nova escala publicada imediatamente!
     return l.filter(i => {
         const di = parseDataSegura(i.data);
-        return di >= seg && di <= dom;
+        return di >= seg; 
     });
 }
 
