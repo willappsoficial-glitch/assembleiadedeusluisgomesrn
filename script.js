@@ -162,9 +162,20 @@ function renderizarAniversariantes(lista) {
     
     lista.forEach(p => {
         let btnZap = '';
-        if(isAdmin && p.telefone) {
-            let msgText = encodeURIComponent(`A Paz do Senhor, ${p.nome}! A liderança da AD Luís Gomes deseja um Feliz Aniversário! Que Deus te abençoe grandemente.`);
-            btnZap = `<a href="https://wa.me/55${p.telefone}?text=${msgText}" target="_blank" class="btn-tiny" style="background:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:5px; color:white;"><span class="material-icons-round" style="font-size:16px">chat</span> Enviar Zap</a>`;
+        
+        // Agora verificamos apenas se a pessoa tem telefone cadastrado (para todos)
+        if(p.telefone) {
+            let msgText = "";
+            
+            if (isAdmin) {
+                // Mensagem exclusiva se quem clicar for o Admin
+                msgText = encodeURIComponent(`A Paz do Senhor, ${p.nome}! A liderança da AD Luís Gomes deseja um Feliz Aniversário! Que Deus te abençoe grandemente.`);
+            } else {
+                // Mensagem padrão para os irmãos da igreja
+                msgText = encodeURIComponent(`A Paz do Senhor, ${p.nome}! Vi no nosso aplicativo que hoje é seu aniversário. Meus parabéns! Que Deus te abençoe grandemente! 🎉`);
+            }
+            
+            btnZap = `<a href="https://wa.me/55${p.telefone}?text=${msgText}" target="_blank" class="btn-tiny" style="background:#25d366; text-decoration:none; display:inline-flex; align-items:center; gap:5px; color:white;"><span class="material-icons-round" style="font-size:16px">chat</span> Parabenizar</a>`;
         }
         
         container.innerHTML += `
