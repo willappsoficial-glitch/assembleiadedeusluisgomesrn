@@ -111,7 +111,16 @@ async function fetchData(action, params = {}) {
 async function carregarDados() {
     // Carrega Escalas e Avisos
     const avisos = await fetchData('getAvisos');
+    
+    // 1. Renderiza no Mural público dos membros
     renderizarAvisos('avisosContainer', avisos);
+    
+    // 2. Renderiza no Painel Pastoral para o Admin gerenciar
+    const adminContainer = document.getElementById('avisosAdminContainer');
+    if(adminContainer) {
+        renderizarAvisos('avisosAdminContainer', avisos);
+    }
+    
     strDadosMural = JSON.stringify(avisos); 
     
     const escalas = await fetchData('getEscalas');
@@ -256,8 +265,24 @@ function carregarVersiculo() {
 
 
 function renderizarAvisos(id, d) {
-    const c = document.getElementById(id); c.innerHTML = d.length ? "" : "<p class='text-center'>Sem avisos.</p>";
+    const c = document.getElementById(id); 
+    c.innerHTML = d.length ? "" : "<p class='text-center'>Sem avisos.</p>";
+    
+    // Verifica se é o Administrador para mostrar os botões
+    const isAdmin = localStorage.getItem('churchAdminPass') !== null;
+
     d.forEach((a, i) => {
+        let adminBtns = '';
+        
+        // Se for Admin e o aviso tiver um ID (linha), mostra os botões Editar/Excluir
+        if(isAdmin && a.linha) {
+            adminBtns = `
+            <div style="display:flex; gap:10px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
+                <button onclick="abrirModalEditAviso('${a.linha}', '${a.titulo.replace(/'/g, "\\'")}', '${a.mensagem.replace(/'/g, "\\'")}')" class="btn-tiny" style="color:var(--primary); display:flex; align-items:center; gap:3px;"><span class="material-icons-round" style="font-size:16px">edit</span> Editar</button>
+                <button onclick="confirmarExcluirAviso('${a.linha}')" class="btn-tiny" style="color:#ef4444; display:flex; align-items:center; gap:3px;"><span class="material-icons-round" style="font-size:16px">delete</span> Excluir</button>
+            </div>`;
+        }
+
         c.innerHTML += `<div class="aviso-card">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <h3>${a.titulo}</h3>
@@ -265,7 +290,8 @@ function renderizarAvisos(id, d) {
                     <span class="material-icons-round">share</span>
                 </button>
             </div>
-            <p>${a.mensagem}</p>
+            <p style="white-space: pre-wrap;">${a.mensagem}</p>
+            ${adminBtns}
         </div>`;
     });
 }
@@ -712,4 +738,52 @@ function repetirEscalaAnterior() {
     document.getElementById('previewEscala').scrollIntoView({ behavior: 'smooth' });
     
     showToast("Escala copiada! Você pode apagar eventos indesejados no 'X' antes de publicar.");
+}
+
+// ========================================================
+// EDIÇÃO E EXCLUSÃO DE AVISOS
+// ========================================================
+async function confirmarExcluirAviso(linha) {
+    if(confirm("Deseja realmente excluir este aviso?")) {
+        showToast("Excluindo...");
+        const res = await fetchData('excluirAviso', { senha: localStorage.getItem('churchAdminPass'), linha: linha });
+        if(res.success) { showToast("Aviso excluído!"); carregarDados(); }
+        else { showToast("Erro ao excluir."); }
+    }
+}
+
+function abrirModalEditAviso(linha, titulo, mensagem) {
+    document.getElementById('edit-aviso-id').value = linha;
+    document.getElementById('edit-aviso-titulo').value = titulo;
+    document.getElementById('edit-aviso-msg').value = mensagem;
+    document.getElementById('modalEditAviso').classList.remove('hidden');
+}
+
+function fecharModalEditAviso() {
+    document.getElementById('modalEditAviso').classList.add('hidden');
+}
+
+async function salvarEdicaoAviso(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnSalvarEditAviso');
+    btn.innerText = "Salvando...";
+    btn.disabled = true;
+
+    const res = await fetchData('editarAviso', {
+        senha: localStorage.getItem('churchAdminPass'),
+        linha: document.getElementById('edit-aviso-id').value,
+        titulo: document.getElementById('edit-aviso-titulo').value,
+        mensagem: document.getElementById('edit-aviso-msg').value
+    });
+
+    if(res.success) { 
+        fecharModalEditAviso(); 
+        showToast("Aviso atualizado!"); 
+        carregarDados(); 
+    } else {
+        showToast("Erro ao editar.");
+    }
+    
+    btn.innerText = "Salvar Alterações";
+    btn.disabled = false;
 }
