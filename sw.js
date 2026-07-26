@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ad-luis-gomes-v3'; // Atualize a versão do cache
+const CACHE_NAME = 'ad-luis-gomes-v4'; // Atualize a versão do cache
 const urlsToCache = [
   './',
   './index.html',
