@@ -801,7 +801,8 @@ function fecharModalEditAviso() {
 }
 
 async function salvarEdicaoAviso(event) {
-    event.preventDefault();
+    if(event) event.preventDefault();
+    
     const btn = document.getElementById('btnSalvarEditAviso');
     btn.innerText = "Salvando...";
     btn.disabled = true;
@@ -813,11 +814,13 @@ async function salvarEdicaoAviso(event) {
         mensagem: document.getElementById('edit-aviso-msg').value
     });
 
-    if(res.success) { 
+    if(res && res.success) { 
         fecharModalEditAviso(); 
         showToast("Aviso atualizado!"); 
         carregarDados(); 
     } else {
+        // ALERTA DETETIVE PARA DESCOBRIR O ERRO
+        alert("Detalhe do erro no aviso: " + JSON.stringify(res));
         showToast("Erro ao editar.");
     }
     
