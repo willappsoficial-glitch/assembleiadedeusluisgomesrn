@@ -202,18 +202,19 @@
         </div>
     </div>
 
+    <!-- Modal Editar Aviso -->
     <div id="modalEditAviso" class="modal hidden">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModalEditAviso()">&times;</span>
-        <h2 style="margin-bottom: 15px; color: var(--primary);">Editar Aviso</h2>
-        <form onsubmit="salvarEdicaoAviso(event)">
-            <input type="hidden" id="edit-aviso-id">
-            <input type="text" id="edit-aviso-titulo" class="input-modern" placeholder="Título do Aviso" required style="margin-bottom: 10px;">
-            <textarea id="edit-aviso-msg" class="input-modern" rows="5" placeholder="Mensagem do Aviso" required style="margin-bottom: 15px;"></textarea>
-            <button type="submit" id="btnSalvarEditAviso" class="btn-primary" style="width: 100%;">Salvar Alterações</button>
-        </form>
+        <div class="modal-surface">
+            <span class="close-modal" onclick="fecharModalEditAviso()">&times;</span>
+            <h3 style="margin-bottom: 15px; color: var(--primary);">Editar Aviso</h3>
+            <form onsubmit="salvarEdicaoAviso(event)">
+                <input type="hidden" id="edit-aviso-id">
+                <input type="text" id="edit-aviso-titulo" class="input-modern" placeholder="Título" required>
+                <textarea id="edit-aviso-msg" class="input-modern" rows="5" placeholder="Mensagem..." required style="margin-top: 10px;"></textarea>
+                <button type="submit" id="btnSalvarEditAviso" class="btn-primary" style="width: 100%; margin-top: 10px;">Salvar Alterações</button>
+            </form>
+        </div>
     </div>
-</div>
 
     <div id="modalPix" class="modal hidden">
         <div class="modal-surface text-center">
