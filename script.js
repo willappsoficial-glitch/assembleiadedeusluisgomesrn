@@ -201,7 +201,9 @@ function renderizarAniversariantes(lista) {
 
 function renderizarEscalaAdmin(id, dados) {
     const tbody = document.getElementById(id);
-    if (!tbody) return; tbody.innerHTML = "";
+    if (!tbody) return; 
+    tbody.innerHTML = "";
+    
     dados.forEach(e => {
         let h = formatarHoraGoogle(e.hora);
         tbody.innerHTML += `
@@ -210,7 +212,8 @@ function renderizarEscalaAdmin(id, dados) {
                 <td>${e.evento}</td>
                 <td style="font-size:0.8rem">D: ${e.dirigentes}<br>P: ${e.porteiros}</td>
                 <td style="white-space:nowrap">
-                    <button onclick="abrirModalEdit('${e.linha}','${e.data}','${h}','${e.evento}','${e.dirigentes}','${e.porteiros}')" class="btn-tiny" style="color:var(--primary)"><span class="material-icons-round" style="font-size:18px">edit</span></button>
+                    <!-- Agora passamos apenas o número da linha no botão! -->
+                    <button onclick="abrirModalEdit('${e.linha}')" class="btn-tiny" style="color:var(--primary)"><span class="material-icons-round" style="font-size:18px">edit</span></button>
                     <button onclick="confirmarExcluir('${e.linha}')" class="btn-tiny" style="color:#ef4444"><span class="material-icons-round" style="font-size:18px">delete</span></button>
                 </td>
             </tr>`;
@@ -225,14 +228,23 @@ async function confirmarExcluir(linha) {
     }
 }
 
-function abrirModalEdit(id, data, hora, evento, dirigentes, porteiros) {
-    document.getElementById('edit-id').value = id;
-    document.getElementById('edit-data').value = data.includes('/') ? data.split('/').reverse().join('-') : data.substring(0,10);
-    document.getElementById('edit-hora').value = hora;
-    document.getElementById('edit-evento').value = evento;
-    document.getElementById('edit-dirigentes').value = dirigentes;
-    document.getElementById('edit-porteiros').value = porteiros;
-    document.getElementById('modalEditEscala').classList.remove('hidden');
+function abrirModalEdit(linha) {
+    // Busca a escala na memória local usando a linha
+    let escalas = JSON.parse(strDadosAgenda);
+    let escalaClicada = escalas.find(e => String(e.linha) === String(linha));
+    
+    if(escalaClicada) {
+        let h = formatarHoraGoogle(escalaClicada.hora);
+        let data = escalaClicada.data;
+
+        document.getElementById('edit-id').value = escalaClicada.linha;
+        document.getElementById('edit-data').value = data.includes('/') ? data.split('/').reverse().join('-') : data.substring(0,10);
+        document.getElementById('edit-hora').value = h;
+        document.getElementById('edit-evento').value = escalaClicada.evento;
+        document.getElementById('edit-dirigentes').value = escalaClicada.dirigentes;
+        document.getElementById('edit-porteiros').value = escalaClicada.porteiros;
+        document.getElementById('modalEditEscala').classList.remove('hidden');
+    }
 }
 function fecharModalEdit() { document.getElementById('modalEditEscala').classList.add('hidden'); }
 
