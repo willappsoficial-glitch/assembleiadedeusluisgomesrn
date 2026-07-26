@@ -160,6 +160,10 @@
                     <input type="text" id="tituloAviso" placeholder="Título" class="input-modern">
                     <textarea id="msgAviso" placeholder="Mensagem..." rows="3" class="input-modern"></textarea>
                     <button onclick="submitAviso()" class="btn-accent w-100">Enviar Aviso</button>
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--border);">
+
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Avisos Publicados (Mural)</h3>
+                    <div id="avisosAdminContainer"></div>
                 </div>
             </div>
             <div class="dash-card mt-4">
@@ -197,6 +201,19 @@
             <button onclick="salvarEdicaoEscala(event)" class="btn-primary w-100" id="btn-salvar-edicao">Salvar</button>
         </div>
     </div>
+
+    <div id="modalEditAviso" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="fecharModalEditAviso()">&times;</span>
+        <h2 style="margin-bottom: 15px; color: var(--primary);">Editar Aviso</h2>
+        <form onsubmit="salvarEdicaoAviso(event)">
+            <input type="hidden" id="edit-aviso-id">
+            <input type="text" id="edit-aviso-titulo" class="input-modern" placeholder="Título do Aviso" required style="margin-bottom: 10px;">
+            <textarea id="edit-aviso-msg" class="input-modern" rows="5" placeholder="Mensagem do Aviso" required style="margin-bottom: 15px;"></textarea>
+            <button type="submit" id="btnSalvarEditAviso" class="btn-primary" style="width: 100%;">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
 
     <div id="modalPix" class="modal hidden">
         <div class="modal-surface text-center">
