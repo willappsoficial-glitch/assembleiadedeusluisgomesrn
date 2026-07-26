@@ -268,17 +268,16 @@ function renderizarAvisos(id, d) {
     const c = document.getElementById(id); 
     c.innerHTML = d.length ? "" : "<p class='text-center'>Sem avisos.</p>";
     
-    // Verifica se é o Administrador para mostrar os botões
     const isAdmin = localStorage.getItem('churchAdminPass') !== null;
 
     d.forEach((a, i) => {
         let adminBtns = '';
         
-        // Se for Admin e o aviso tiver um ID (linha), mostra os botões Editar/Excluir
         if(isAdmin && a.linha) {
+            // Passamos APENAS a linha no botão, evitando que o texto quebre o código
             adminBtns = `
             <div style="display:flex; gap:10px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
-                <button onclick="abrirModalEditAviso('${a.linha}', '${a.titulo.replace(/'/g, "\\'")}', '${a.mensagem.replace(/'/g, "\\'")}')" class="btn-tiny" style="color:var(--primary); display:flex; align-items:center; gap:3px;"><span class="material-icons-round" style="font-size:16px">edit</span> Editar</button>
+                <button onclick="abrirModalEditAviso('${a.linha}')" class="btn-tiny" style="color:var(--primary); display:flex; align-items:center; gap:3px;"><span class="material-icons-round" style="font-size:16px">edit</span> Editar</button>
                 <button onclick="confirmarExcluirAviso('${a.linha}')" class="btn-tiny" style="color:#ef4444; display:flex; align-items:center; gap:3px;"><span class="material-icons-round" style="font-size:16px">delete</span> Excluir</button>
             </div>`;
         }
@@ -752,11 +751,17 @@ async function confirmarExcluirAviso(linha) {
     }
 }
 
-function abrirModalEditAviso(linha, titulo, mensagem) {
-    document.getElementById('edit-aviso-id').value = linha;
-    document.getElementById('edit-aviso-titulo').value = titulo;
-    document.getElementById('edit-aviso-msg').value = mensagem;
-    document.getElementById('modalEditAviso').classList.remove('hidden');
+function abrirModalEditAviso(linha) {
+    // Busca os dados direto do cache local (blindado contra erros de texto)
+    let avisos = JSON.parse(strDadosMural);
+    let avisoClicado = avisos.find(a => String(a.linha) === String(linha));
+    
+    if(avisoClicado) {
+        document.getElementById('edit-aviso-id').value = avisoClicado.linha;
+        document.getElementById('edit-aviso-titulo').value = avisoClicado.titulo;
+        document.getElementById('edit-aviso-msg').value = avisoClicado.mensagem;
+        document.getElementById('modalEditAviso').classList.remove('hidden');
+    }
 }
 
 function fecharModalEditAviso() {
