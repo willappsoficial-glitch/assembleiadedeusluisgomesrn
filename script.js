@@ -249,7 +249,13 @@ function abrirModalEdit(linha) {
 function fecharModalEdit() { document.getElementById('modalEditEscala').classList.add('hidden'); }
 
 async function salvarEdicaoEscala(event) {
-    event.preventDefault();
+    if(event) event.preventDefault();
+    
+    const btn = document.getElementById('btn-salvar-edicao');
+    btn.innerText = "Salvando...";
+    btn.disabled = true;
+
+    // Faz a chamada para o Apps Script
     const res = await fetchData('editarEscala', {
         senha: localStorage.getItem('churchAdminPass'),
         linha: document.getElementById('edit-id').value,
@@ -259,7 +265,21 @@ async function salvarEdicaoEscala(event) {
         dirigentes: document.getElementById('edit-dirigentes').value,
         porteiros: document.getElementById('edit-porteiros').value
     });
-    if(res.success) { fecharModalEdit(); showToast("Atualizado!"); carregarDados(); }
+
+    // Analisa a resposta
+    if(res && res.success) { 
+        fecharModalEdit(); 
+        showToast("Atualizado!"); 
+        carregarDados(); 
+    } else {
+        // ALERTA DETETIVE PARA DESCOBRIR O ERRO
+        alert("Detalhe do erro: " + JSON.stringify(res));
+        showToast("Erro ao salvar.");
+    }
+    
+    // Restaura o botão
+    btn.innerText = "Salvar";
+    btn.disabled = false;
 }
 
 function carregarVersiculo() {
