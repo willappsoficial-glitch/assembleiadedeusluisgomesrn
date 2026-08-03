@@ -124,7 +124,10 @@ async function carregarDados() {
     strDadosMural = JSON.stringify(avisos); 
     
     const escalas = await fetchData('getEscalas');
-    let filtradas = filtrarSemanaAtual(escalas);
+    
+    // --- A BARREIRA FOI REMOVIDA AQUI ---
+    // Repassamos as escalas direto para a variável 'filtradas', sem cortar nada
+    let filtradas = escalas; 
     
     // --- NOVA ORDENAÇÃO POR DATA E HORA ---
     filtradas.sort((a, b) => {
